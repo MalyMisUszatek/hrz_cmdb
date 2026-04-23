@@ -804,11 +804,50 @@ var HrzCmdb = {
 
   // Reloads the entire tree from the root.
   // This is useful after operations that modify the tree structure (e.g., seed data operations).
+
   loadTree: function() {
     console.log('=== loadTree called ===');
-    // Clear the tree container
     $('#cmdb-tree').empty();
-    // Reload the tree from root
     this.initTree();
-  }
+  },                          // <-- dodaj przecinek tutaj!
+
+  deleteRelation: function(ciId, relationId) {
+    if (!confirm(HrzCmdb.i18n.confirmDelete || 'Delete this relation?')) return;
+    $.ajax({
+      url: '/cmdb/cis/' + ciId + '/relations/' + relationId,
+      method: 'DELETE',
+      headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+      success: function(data) {
+        if (data.success) {
+          HrzCmdb.loadNode('ci', 'ci_' + ciId);
+        } else {
+          alert(data.errors ? data.errors.join('\n') : 'Error');
+        }
+      }
+    });
+  }                           
 };
+
+// Handle ci-relation form submission via AJAX
+$(document).on('submit', '.ci-relation-new-form', function(e) {
+  e.preventDefault();
+  var form = $(this);
+  var formId = form.attr('id') || '';
+  var ciId = formId.replace('new-relation-form-', '');
+  $.ajax({
+    url: form.attr('action'),
+    method: 'POST',
+    data: form.serialize(),
+    headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+    success: function(data) {
+      if (data.success) {
+        HrzCmdb.loadNode('ci', 'ci_' + ciId);
+      } else {
+        alert(data.errors ? data.errors.join('\n') : 'Error');
+      }
+    },
+    error: function(xhr) {
+      alert('Error: ' + xhr.status);
+    }
+  });
+});

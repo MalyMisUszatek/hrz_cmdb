@@ -31,6 +31,14 @@ class HrzcmCi < ActiveRecord::Base
 
   has_many :ci_ext_mappings, class_name: 'HrzcmCiExt', foreign_key: 'j_ci_id', dependent: :destroy
   has_many :ext_systems, through: :ci_ext_mappings, source: :ext_sys, class_name: 'HrzcmExtSys'
+  has_many :outgoing_relations, class_name: 'HrzcmCiRelation',
+           foreign_key: 'source_ci_id', dependent: :destroy
+  has_many :incoming_relations, class_name: 'HrzcmCiRelation',
+           foreign_key: 'target_ci_id', dependent: :destroy
+
+  def all_relations
+    HrzcmCiRelation.for_ci(id).includes(:source_ci, :target_ci)
+  end
 
   # Validations
   validates :j_ci_class_id, presence: true

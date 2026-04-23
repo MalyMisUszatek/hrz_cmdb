@@ -71,4 +71,12 @@ Rails.application.routes.draw do
     get 'cis/available', to: 'issue_cis#available_cis', as: :available_cis
     resources :cis, controller: 'issue_cis', only: [:create, :destroy]
   end
+
+  # CI Relations routes
+  scope '/cmdb/cis/:ci_id', as: :ci do
+    get  'relations',     to: 'ci_relations#index',   as: :relations
+    post 'relations',     to: 'ci_relations#create'
+    delete 'relations/:id', to: 'ci_relations#destroy', as: :relation
+  end
+
 end

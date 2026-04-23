@@ -1,0 +1,79 @@
+<div class="ci-relations-section" id="ci-relations-<%= ci.id %>">
+  <h4><%= l('hrz_cmdb.ci_relations.title') %></h4>
+
+  <% if relations.any? %>
+    <table class="list">
+      <thead>
+        <tr>
+          <th><%= l('hrz_cmdb.ci_relations.direction') %></th>
+          <th><%= l('hrz_cmdb.ci_relations.relation_type') %></th>
+          <th><%= l('hrz_cmdb.ci_relations.related_ci') %></th>
+          <th><%= l('hrz_cmdb.fields.b_comment') %></th>
+          <% if can_edit %><th></th><% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% relations.each do |rel| %>
+          <% is_source = rel.source_ci_id == ci.id %>
+          <% other_ci  = is_source ? rel.target_ci : rel.source_ci %>
+          <tr>
+            <td><%= is_source ? '→' : '←' %></td>
+            <td>
+              <% type_key = is_source ? rel.relation_type : rel.inverse_type %>
+              <%= l("hrz_cmdb.ci_relations.types.#{type_key}", default: type_key) %>
+            </td>
+            <td>
+              <a href="#" onclick="HrzCmdb.loadNode('ci', 'ci_<%= other_ci.id %>'); return false;">
+                <%= other_ci.tree_label %>
+              </a>
+            </td>
+            <td><%= rel.b_comment %></td>
+            <% if can_edit %>
+              <td>
+                <a href="#" class="icon icon-del"
+                   title="<%= l('hrz_cmdb.ci_relations.delete') %>"
+                   onclick="HrzCmdb.deleteRelation(<%= ci.id %>, <%= rel.id %>); return false;"></a>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="nodata"><%= l('hrz_cmdb.ci_relations.none') %></p>
+  <% end %>
+
+  <% if can_edit %>
+    <div class="ci-relation-form">
+      <h5><%= l('hrz_cmdb.ci_relations.add') %></h5>
+      <%= form_tag "/cmdb/cis/#{ci.id}/relations", method: :post,
+                   id: "new-relation-form-#{ci.id}", class: 'ci-relation-new-form' do %>
+        <div class="form-group">
+          <%= label_tag :relation_type, l('hrz_cmdb.ci_relations.relation_type') %>
+          <%= select_tag 'ci_relation[relation_type]',
+                         options_for_select(
+                           HrzcmCiRelation::RELATION_TYPES.map { |t|
+                             [l("hrz_cmdb.ci_relations.types.#{t}", default: t), t]
+                           }
+                         ), class: 'form-control form-control-short' %>
+        </div>
+        <div class="form-group">
+          <%= label_tag :target_ci_id, l('hrz_cmdb.ci_relations.related_ci') %>
+          <%= select_tag 'ci_relation[target_ci_id]',
+                         options_for_select(
+                           [[l('hrz_cmdb.select_item'), '']] +
+                           HrzcmCi.ordered_by_abbr.where.not(id: ci.id).map { |c| [c.tree_label, c.id] }
+                         ), class: 'form-control' %>
+        </div>
+        <div class="form-group">
+          <%= label_tag :b_comment, l('hrz_cmdb.fields.b_comment') %>
+          <%= text_field_tag 'ci_relation[b_comment]', '', class: 'form-control', maxlength: 1000 %>
+        </div>
+        <div class="form-actions">
+          <%= submit_tag l('hrz_cmdb.ci_relations.add'), class: 'button button-positive',
+                         id: "submit-relation-#{ci.id}" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

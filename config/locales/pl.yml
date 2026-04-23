@@ -246,6 +246,42 @@ pl:
         location_hierarchies: "Poziomy hierarchii lokalizacji"
         locations: "Lokalizacje"
 
+    ci_relations:
+      title: "Relacje CI"
+      none: "Brak relacji"
+      add: "Dodaj relację"
+      relation_type: "Typ relacji"
+      related_ci: "Powiązane CI"
+      confirm_delete: "Czy na pewno usunąć tę relację?"
+      direction: "Kierunek"
+      delete: "Usuń relację"
+      created: "Relacja utworzona pomyślnie"
+      deleted: "Relacja usunięta pomyślnie"
+      types:
+        depends_on: "Zależy od"
+        is_dependency_of: "Jest zależnością dla"
+        connects_to: "Łączy się z"
+        is_connected_from: "Jest połączone z"
+        runs_on: "Działa na"
+        has_running: "Hostuje działające"
+        hosts: "Hostuje"
+        is_part_of: "Jest częścią"
+        contains: "Zawiera"
+        backup_of: "Kopia zapasowa"
+        is_backed_up_by: "Jest archiwizowane przez"
+        connected_to: "Połączone z"
+        installed_on: "Zainstalowane na"
+        has_installed: "Ma zainstalowane"
+        virtualizes: "Wirtualizuje"
+        is_virtualized_by: "Jest wirtualizowane przez"
+        backs_up: "Archiwizuje"
+      errors:
+        ci_not_found: "CI nie znalezione"
+        relation_not_found: "Relacja nie znaleziona"
+        cannot_relate_to_self: "CI nie może być powiązane samo ze sobą"
+        already_exists: "Taka relacja już istnieje"
+    
+
   # Issue CI Integration
   label_configuration_items: "Elementy konfiguracji"
   label_configuration_item: "Element konfiguracji"

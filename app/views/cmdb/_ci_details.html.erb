@@ -154,4 +154,14 @@
       </div>
     <% end %>
   <% end %>
+  <%# CI Relations section — only for persisted records %>
+  <% if ci.persisted? %>
+    <hr/>
+    <%= render partial: 'ci_relations/ci_relations_section',
+               locals: {
+                 ci: ci,
+                 relations: ci.all_relations,
+                 can_edit: can_edit
+               } %>
+  <% end %>
 </div>

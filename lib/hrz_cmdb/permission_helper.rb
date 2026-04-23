@@ -62,6 +62,18 @@ module HrzCmdb
         group_ids = groups_for_permission(permission_type)
         Group.where(id: group_ids)
       end
+      # Convenience wrappers used by controllers
+      def can_view?(user)
+        user_has_permission?(user, 'view_cmdb')
+      end
+
+      def can_edit?(user)
+        user_has_permission?(user, 'edit_cmdb')
+      end
+
+      def can_edit_basic_data?(user)
+        user_has_permission?(user, 'edit_basic_data')
+      end
     end
   end
 end
