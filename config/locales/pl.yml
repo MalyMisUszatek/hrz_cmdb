@@ -276,6 +276,14 @@ pl:
         virtualizes: "Wirtualizuje"
         is_virtualized_by: "Jest wirtualizowane przez"
         backs_up: "Archiwizuje"
+      replace:
+        title: "Podmień CI (przenieś wszystkie relacje)"
+        new_ci_label: "Nowe CI (zastępnik)"
+        retire_old_label: "Wycofaj stare CI (ustaw status Retired)"
+        button: "Podmień"
+        confirm: "Czy na pewno przenieść wszystkie relacje na wybrane CI?"
+        select_placeholder: "-- wybierz CI --"
+        error_no_ci: "Wybierz nowe CI"
       errors:
         ci_not_found: "CI nie znalezione"
         relation_not_found: "Relacja nie znaleziona"

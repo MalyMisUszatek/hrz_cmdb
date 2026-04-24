@@ -78,23 +78,23 @@
     </div>
 
     <div class="ci-replace-form" style="margin-top:16px; padding-top:12px; border-top:1px solid #ddd;">
-      <h5>Podmien CI (przenies wszystkie relacje)</h5>
+      <h5><%= l('hrz_cmdb.ci_relations.replace.title') %></h5>
       <%= form_tag "/cmdb/cis/#{ci.id}/replace", method: :post,
                    id: "replace-ci-form-#{ci.id}", class: 'ci-replace-form-inner' do %>
         <div class="form-group">
-          <%= label_tag :new_ci_id, 'Nowe CI (zastepnik)' %>
+          <%= label_tag :new_ci_id, l('hrz_cmdb.ci_relations.replace.new_ci_label') %>
           <%= select_tag 'new_ci_id',
                          options_for_select(
-                           [['-- wybierz CI --', '']] +
+                           [[l('hrz_cmdb.ci_relations.replace.select_placeholder'), '']] +
                            HrzcmCi.ordered_by_abbr.where.not(id: ci.id).map { |c| [c.tree_label, c.id] }
                          ), class: 'form-control' %>
         </div>
         <div class="form-group">
           <%= check_box_tag 'retire_old', '1', false %>
-          <%= label_tag 'retire_old', 'Ustaw stare CI jako wycofane (retired)' %>
+          <%= label_tag 'retire_old', l('hrz_cmdb.ci_relations.replace.retire_old_label') %>
         </div>
         <div class="form-actions">
-          <%= submit_tag 'Przenies relacje', class: 'button button-negative',
+          <%= submit_tag l('hrz_cmdb.ci_relations.replace.button'), class: 'button button-negative',
                          onclick: "return HrzCmdb.replaceCI(#{ci.id});",
                          id: "submit-replace-#{ci.id}" %>
         </div>
