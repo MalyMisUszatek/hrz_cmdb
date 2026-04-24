@@ -857,8 +857,11 @@ HrzCmdb.replaceCI = function(ciId) {
   var form = document.getElementById('replace-ci-form-' + ciId);
   var newCiId = $(form).find('[name="new_ci_id"]').val();
   var retireOld = $(form).find('[name="retire_old"]').is(':checked') ? '1' : '0';
-  if (!newCiId) { alert('Wybierz nowe CI'); return false; }
-  if (!confirm('Czy na pewno przeniesc wszystkie relacje na wybrane CI?')) return false;
+  var btn = document.getElementById('submit-replace-' + ciId);
+  var msgNoCI = btn ? btn.getAttribute('data-error-no-ci') : 'Wybierz nowe CI';
+  var msgConfirm = btn ? btn.getAttribute('data-confirm') : 'Czy na pewno?';
+  if (!newCiId) { alert(msgNoCI); return false; }
+  if (!confirm(msgConfirm)) return false;
   $.ajax({
     url: '/cmdb/cis/' + ciId + '/replace',
     method: 'POST',

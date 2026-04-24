@@ -95,6 +95,7 @@
         </div>
         <div class="form-actions">
           <%= submit_tag l('hrz_cmdb.ci_relations.replace.button'), class: 'button button-negative',
+                         data: { confirm: l("hrz_cmdb.ci_relations.replace.confirm"), "error-no-ci": l("hrz_cmdb.ci_relations.replace.error_no_ci") },
                          onclick: "return HrzCmdb.replaceCI(#{ci.id});",
                          id: "submit-replace-#{ci.id}" %>
         </div>
