@@ -1,3 +1,4 @@
+<%# encoding: utf-8 %>
 <div class="ci-relations-section" id="ci-relations-<%= ci.id %>">
   <h4><%= l('hrz_cmdb.ci_relations.title') %></h4>
 
@@ -17,7 +18,7 @@
           <% is_source = rel.source_ci_id == ci.id %>
           <% other_ci  = is_source ? rel.target_ci : rel.source_ci %>
           <tr>
-            <td><%= is_source ? '→' : '←' %></td>
+            <td><%= is_source ? '&rarr;'.html_safe : '&larr;'.html_safe %></td>
             <td>
               <% type_key = is_source ? rel.relation_type : rel.inverse_type %>
               <%= l("hrz_cmdb.ci_relations.types.#{type_key}", default: type_key) %>
@@ -32,7 +33,7 @@
               <td>
                 <a href="#" class="icon icon-del"
                    title="<%= l('hrz_cmdb.ci_relations.delete') %>"
-                   onclick="HrzCmdb.deleteRelation(<%= ci.id %>, <%= rel.id %>); return false;"></a>
+                   onclick="HrzCmdb.deleteRelation(<%= ci.id %>, <%= rel.id %>); return false;"><%= sprite_icon('del') %></a>
               </td>
             <% end %>
           </tr>
@@ -72,6 +73,30 @@
         <div class="form-actions">
           <%= submit_tag l('hrz_cmdb.ci_relations.add'), class: 'button button-positive',
                          id: "submit-relation-#{ci.id}" %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="ci-replace-form" style="margin-top:16px; padding-top:12px; border-top:1px solid #ddd;">
+      <h5>Podmien CI (przenies wszystkie relacje)</h5>
+      <%= form_tag "/cmdb/cis/#{ci.id}/replace", method: :post,
+                   id: "replace-ci-form-#{ci.id}", class: 'ci-replace-form-inner' do %>
+        <div class="form-group">
+          <%= label_tag :new_ci_id, 'Nowe CI (zastepnik)' %>
+          <%= select_tag 'new_ci_id',
+                         options_for_select(
+                           [['-- wybierz CI --', '']] +
+                           HrzcmCi.ordered_by_abbr.where.not(id: ci.id).map { |c| [c.tree_label, c.id] }
+                         ), class: 'form-control' %>
+        </div>
+        <div class="form-group">
+          <%= check_box_tag 'retire_old', '1', false %>
+          <%= label_tag 'retire_old', 'Ustaw stare CI jako wycofane (retired)' %>
+        </div>
+        <div class="form-actions">
+          <%= submit_tag 'Przenies relacje', class: 'button button-negative',
+                         onclick: "return HrzCmdb.replaceCI(#{ci.id});",
+                         id: "submit-replace-#{ci.id}" %>
         </div>
       <% end %>
     </div>

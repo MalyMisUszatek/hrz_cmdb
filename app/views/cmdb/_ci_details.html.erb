@@ -122,7 +122,7 @@
       <fieldset class="status-info">
         <legend><%= l('hrz_cmdb.status_info.title') %></legend>
         <div class="status-info-content">
-          <% if ci.persisted? %>
+  <% if ci.persisted? %>
             <%= l('hrz_cmdb.status_info.record_id') %>: <%= ci.id %>
             <% if ci.creator.present? %>
               <%= l('hrz_cmdb.status_info.created_by') %>
@@ -143,10 +143,10 @@
       <div class="form-actions">
         <%= submit_tag l('hrz_cmdb.buttons.save'), class: 'button button-positive' %>
         <%= submit_tag l('hrz_cmdb.buttons.save_continue'), class: 'button', name: 'continue' %>
-        <% if ci.persisted? %>
+  <% if ci.persisted? %>
           <%= submit_tag l('hrz_cmdb.buttons.save_as_copy'), class: 'button', name: 'save_as_copy' %>
         <% end %>
-        <% if ci.persisted? %>
+  <% if ci.persisted? %>
           <%= link_to l('hrz_cmdb.buttons.delete'), "#", class: 'button button-negative',
                       onclick: "if (confirm('#{l('hrz_cmdb.confirm.delete_ci')}')) { HrzCmdb.deleteNode('ci', #{ci.id}); } return false;" %>
         <% end %>

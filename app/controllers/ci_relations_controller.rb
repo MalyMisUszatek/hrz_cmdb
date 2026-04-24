@@ -2,7 +2,7 @@ class CiRelationsController < ApplicationController
   before_action :find_ci
   before_action :check_view_permission
   before_action :find_relation, only: [:destroy]
-  before_action :check_edit_permission, only: [:create, :destroy]
+  before_action :check_edit_permission, only: [:create, :destroy, :replace]
 
   def index
     @relations = @ci.all_relations
@@ -48,6 +48,42 @@ class CiRelationsController < ApplicationController
     end
   end
 
+  def replace
+    new_ci_id = params[:new_ci_id].to_i
+  
+    unless new_ci_id > 0
+      return render json: { success: false, errors: ['Nie wybrano nowego CI'] }
+    end
+  
+    new_ci = HrzcmCi.find_by(id: new_ci_id)
+    unless new_ci
+      return render json: { success: false, errors: ['Nowe CI nie istnieje'] }
+    end
+  
+    ActiveRecord::Base.transaction do
+      HrzcmCiRelation.where(source_ci_id: @ci.id).update_all(source_ci_id: new_ci_id)
+      HrzcmCiRelation.where(target_ci_id: @ci.id).update_all(target_ci_id: new_ci_id)
+      HrzcmCiRelation.where(source_ci_id: new_ci_id)
+                       .where(target_ci_id: new_ci_id).destroy_all
+      end
+  
+    if params[:retire_old] == '1'
+      retired_status = HrzcmLifecycleStatus.find_by(b_key: 'retired')
+      @ci.update(j_status_id: retired_status.id) if retired_status
+    end
+
+    if request.xhr? || request.format.json?
+     render json: { 
+       success: true, 
+       notice: I18n.t('hrz_cmdb.ci_relations.replaced'),
+       redirect_ci_id: new_ci_id
+     }
+    else
+      flash[:notice] = I18n.t('hrz_cmdb.ci_relations.replaced')
+      redirect_to "/cmdb#ci_#{new_ci_id}"
+    end  
+
+  end
   private
 
   def find_ci

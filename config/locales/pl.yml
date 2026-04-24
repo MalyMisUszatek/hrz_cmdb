@@ -257,6 +257,7 @@ pl:
       delete: "Usuń relację"
       created: "Relacja utworzona pomyślnie"
       deleted: "Relacja usunięta pomyślnie"
+      replaced: "Relacje CI przeniesione pomyślnie na nowe CI"
       types:
         depends_on: "Zależy od"
         is_dependency_of: "Jest zależnością dla"

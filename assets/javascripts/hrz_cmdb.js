@@ -851,3 +851,27 @@ $(document).on('submit', '.ci-relation-new-form', function(e) {
     }
   });
 });
+
+// Nadpisz replaceCI - uzyj jQuery jak reszta pluginu
+HrzCmdb.replaceCI = function(ciId) {
+  var form = document.getElementById('replace-ci-form-' + ciId);
+  var newCiId = $(form).find('[name="new_ci_id"]').val();
+  var retireOld = $(form).find('[name="retire_old"]').is(':checked') ? '1' : '0';
+  if (!newCiId) { alert('Wybierz nowe CI'); return false; }
+  if (!confirm('Czy na pewno przeniesc wszystkie relacje na wybrane CI?')) return false;
+  $.ajax({
+    url: '/cmdb/cis/' + ciId + '/replace',
+    method: 'POST',
+    data: { new_ci_id: newCiId, retire_old: retireOld },
+    headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+    success: function(data) {
+      if (data.success) {
+        HrzCmdb.loadNode('ci', 'ci_' + newCiId);
+      } else {
+        alert(data.errors ? data.errors.join('\n') : 'Error');
+      }
+    },
+    error: function(xhr) { alert('Error: ' + xhr.status); }
+  });
+  return false;
+};
