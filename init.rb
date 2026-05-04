@@ -22,14 +22,14 @@ Redmine::Plugin.register :hrz_cmdb do
   name 'CMDB AF'
   author 'Franz Apeltauer'
   description 'Configuration Management Database (CMDB) plugin for Redmine'
-  version '0.8.2'
+  version '0.8.3'
   url 'https://github.com/franz-ap/hrz_cmdb'
   author_url ''
   requires_redmine version_or_higher: '6.1.0'
 
   # Add menu item to top menu
   menu :top_menu, :cmdb,
-       { controller: 'cmdb_queries', action: 'index' },
+       { controller: 'cmdb',         action: 'index' },
        caption: :label_cmdb,
        if: Proc.new {
          HrzCmdb::PermissionHelper.user_has_permission?(User.current, 'view_cmdb') ||
