@@ -11,7 +11,8 @@ class HrzcmQuery < ActiveRecord::Base
   before_create { self.created_on = self.updated_on = Time.now }
   before_update { self.updated_on = Time.now }
 
-  ENTITY_TYPES = %w[ci location ci_class lifecycle_status].freeze
+  ENTITY_TYPES   = %w[ci location ci_class lifecycle_status].freeze
+  RELATION_TYPES = %w[connected_to contains installed_on runs_on virtualizes].freeze
 
   AVAILABLE_COLUMNS = {
     'ci' => [
@@ -23,6 +24,8 @@ class HrzcmQuery < ActiveRecord::Base
       ['b_producer',    :field_b_producer],
       ['b_model',       :field_b_model],
       ['b_tag_serial',  :field_b_tag_serial],
+      ['relations_out', :field_relations_out],
+      ['relations_in',  :field_relations_in],
       ['created_on',    :field_created_on],
       ['updated_on',    :field_updated_on]
     ],
@@ -53,9 +56,11 @@ class HrzcmQuery < ActiveRecord::Base
     ]
   }.freeze
 
-  TEXT_FIELDS = %w[b_name_full b_name_abbr b_key b_producer b_model b_tag_serial].freeze
-  FK_FIELDS   = %w[j_ci_class_id j_location_id j_status_id j_type_id j_part_of1_id j_subclass_of_id].freeze
-  DATE_FIELDS = %w[created_on updated_on].freeze
+  TEXT_FIELDS     = %w[b_name_full b_name_abbr b_key b_producer b_model b_tag_serial].freeze
+  FK_FIELDS       = %w[j_ci_class_id j_location_id j_status_id j_type_id j_part_of1_id j_subclass_of_id].freeze
+  DATE_FIELDS     = %w[created_on updated_on].freeze
+  VIRTUAL_FIELDS  = %w[relations_out relations_in].freeze
+  RELATION_FILTER = 'has_relation_type'.freeze
 
   def filters_data
     return [] if filters.blank?
@@ -85,9 +90,9 @@ class HrzcmQuery < ActiveRecord::Base
 
   def entity_model
     {
-      'ci' => HrzcmCi,
-      'location' => HrzcmLocation,
-      'ci_class' => HrzcmCiClass,
+      'ci'               => HrzcmCi,
+      'location'         => HrzcmLocation,
+      'ci_class'         => HrzcmCiClass,
       'lifecycle_status' => HrzcmLifecycleStatus
     }[entity_type]
   end
@@ -103,6 +108,32 @@ class HrzcmQuery < ActiveRecord::Base
       field    = f['field'].to_s
       operator = f['operator'].to_s
       value    = f['value'].to_s
+
+      if field == RELATION_FILTER
+        case value
+        when 'any'
+          scope = scope.joins(
+            "INNER JOIN hrzcm_ci_relations r
+             ON r.source_ci_id = hrzcm_ci.id OR r.target_ci_id = hrzcm_ci.id"
+          ).distinct
+        when 'none'
+          scope = scope.where(
+            "NOT EXISTS (SELECT 1 FROM hrzcm_ci_relations r
+              WHERE r.source_ci_id = hrzcm_ci.id OR r.target_ci_id = hrzcm_ci.id)"
+          )
+        else
+          if RELATION_TYPES.include?(value)
+            quoted = HrzcmCi.connection.quote(value)
+            scope = scope.joins(
+              "INNER JOIN hrzcm_ci_relations r
+               ON (r.source_ci_id = hrzcm_ci.id OR r.target_ci_id = hrzcm_ci.id)
+               AND r.relation_type = #{quoted}"
+            ).distinct
+          end
+        end
+        next
+      end
+
       next unless valid_field?(field)
 
       case operator
@@ -126,7 +157,8 @@ class HrzcmQuery < ActiveRecord::Base
   end
 
   def valid_field?(field)
-    (AVAILABLE_COLUMNS[entity_type] || []).map(&:first).include?(field.to_s)
+    all = (AVAILABLE_COLUMNS[entity_type] || []).map(&:first) + VIRTUAL_FIELDS + [RELATION_FILTER]
+    all.include?(field.to_s)
   end
 
   def sanitize_like(str)

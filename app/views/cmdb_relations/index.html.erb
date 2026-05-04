@@ -1,0 +1,167 @@
+<%= stylesheet_link_tag 'hrz_cmdb', plugin: 'hrz_cmdb', cache: false %>
+<%= stylesheet_link_tag 'cmdb_layout_patch', plugin: 'hrz_cmdb', cache: false %>
+
+<%= render partial: 'cmdb/cmdb_tabs' %>
+
+<h2>Mapa relacji CMDB</h2>
+
+<div id="cmdb-rel-layout" style="display:flex;gap:16px;align-items:flex-start">
+
+  <!-- LEWY PANEL: filtry -->
+  <div id="cmdb-rel-filters" style="min-width:260px;max-width:280px">
+    <div class="box" style="padding:12px">
+      <h3 style="margin:0 0 10px">Parametry</h3>
+
+      <p>
+        <label><b>CI startowe</b></label><br/>
+        <select id="rel-ci-select" style="width:100%">
+          <option value="">— wybierz CI —</option>
+          <% @ci_list.each do |ci| %>
+            <option value="<%= ci.id %>"
+              <%= 'selected' if @selected_ci&.id == ci.id %>>
+              <%= ci.b_name_abbr || ci.b_name_full %>
+              <% if ci.ci_class %> (<%= ci.ci_class.b_name_abbr %>)<% end %>
+            </option>
+          <% end %>
+        </select>
+      </p>
+
+      <p>
+        <label><b>Kierunek</b></label><br/>
+        <select id="rel-direction" style="width:100%">
+          <option value="down" <%= 'selected' if @direction=='down' %>>↓ w dół (outgoing)</option>
+          <option value="up"   <%= 'selected' if @direction=='up'   %>>↑ w górę (incoming)</option>
+          <option value="both" <%= 'selected' if @direction=='both' %>>↕ obydwa</option>
+        </select>
+      </p>
+
+      <p>
+        <label><b>Typy relacji</b></label><br/>
+        <% HrzcmCiRelation::RELATION_TYPES.each do |rt| %>
+          <label style="display:block;font-weight:normal">
+            <input type="checkbox" class="rel-type-cb" value="<%= rt %>"
+              <%= 'checked' if Array(@rel_types).include?(rt) %>>
+            <%= rt %>
+          </label>
+        <% end %>
+      </p>
+
+      <p>
+        <label><b>Głębokość (max <%= @max_depth %>)</b></label><br/>
+        <input type="range" id="rel-depth" min="1" max="10"
+               value="<%= @max_depth %>" style="width:100%"
+               oninput="document.getElementById('rel-depth-val').textContent=this.value">
+        <span id="rel-depth-val"><%= @max_depth %></span>
+      </p>
+
+      <p>
+        <a href="#" class="button button-positive" onclick="cmdbRelLoad();return false;">
+          ▶ Pokaż mapę
+        </a>
+      </p>
+    </div>
+
+    <!-- legenda -->
+    <div class="box" style="padding:10px;margin-top:8px;font-size:11px">
+      <b>Legenda relacji:</b><br/>
+      <% HrzcmCiRelation::RELATION_TYPES.each do |rt| %>
+        <span class="cmdb-rel-pill cmdb-rel-<%= rt.gsub('_','-') %>"><%= rt %></span><br/>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- PRAWY PANEL: drzewo -->
+  <div id="cmdb-rel-tree-panel" style="flex:1;min-width:0">
+    <% if @selected_ci && @tree %>
+      <div id="cmdb-rel-tree">
+        <%= render partial: 'cmdb_relations/tree_node',
+            locals: { node: @tree, depth: 0 } %>
+      </div>
+    <% elsif @selected_ci %>
+      <div class="nodata">Brak relacji dla wybranego CI.</div>
+    <% else %>
+      <div class="nodata" style="padding:40px;text-align:center;color:#888">
+        ← Wybierz CI i kliknij <b>Pokaż mapę</b>
+      </div>
+    <% end %>
+    <div id="cmdb-rel-loading" style="display:none;padding:20px;color:#888">
+      Ładowanie...
+    </div>
+  </div>
+
+</div>
+
+<script>
+var cmdbRelTreeUrl = '<%= cmdb_relations_tree_data_path %>';
+
+function cmdbRelLoad() {
+  var ciId = document.getElementById('rel-ci-select').value;
+  if (!ciId) { alert('Wybierz CI startowe'); return; }
+  var dir   = document.getElementById('rel-direction').value;
+  var depth = document.getElementById('rel-depth').value;
+  var types = Array.from(document.querySelectorAll('.rel-type-cb:checked')).map(function(cb){return cb.value;});
+  if (!types.length) { alert('Zaznacz co najmniej jeden typ relacji'); return; }
+
+  document.getElementById('cmdb-rel-tree-panel').innerHTML =
+    '<div style="padding:20px;color:#888">Ładowanie...</div>';
+
+  var params = new URLSearchParams();
+  params.append('ci_id', ciId);
+  params.append('direction', dir);
+  params.append('max_depth', depth);
+  types.forEach(function(t){ params.append('rel_types[]', t); });
+
+  fetch(cmdbRelTreeUrl + '?' + params.toString(), {
+    headers: {'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRF-Token': document.querySelector('meta[name=csrf-token]')?.content || ''}
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    document.getElementById('cmdb-rel-tree-panel').innerHTML =
+      '<div id="cmdb-rel-tree">' + cmdbRenderNode(data, 0) + '</div>';
+  })
+  .catch(function(e){
+    document.getElementById('cmdb-rel-tree-panel').innerHTML =
+      '<div class="error">Błąd ładowania: ' + e.message + '</div>';
+  });
+}
+
+function cmdbRenderNode(node, depth) {
+  var indent = depth * 28;
+  var relBadge = node.via
+    ? '<span class="cmdb-rel-pill cmdb-rel-' + node.via.replace(/_/g,'-') + '">'
+      + (node.direction_in ? '↑ ' : '↓ ') + node.via + '</span> '
+    : '';
+  var cls = node.ci_class ? ' <em style="color:#888;font-size:11px">(' + cmdbEsc(node.ci_class) + ')</em>' : '';
+  var st  = node.status   ? ' <span class="cmdb-status-badge">' + cmdbEsc(node.status) + '</span>' : '';
+  var toggle = node.children && node.children.length
+    ? '<a href="#" class="cmdb-toggle" onclick="cmdbToggle(this);return false;">▼</a> '
+    : '<span style="display:inline-block;width:16px"></span> ';
+
+  var html = '<div class="cmdb-tree-node" style="margin-left:' + indent + 'px">'
+    + toggle + relBadge
+    + '<span class="cmdb-node-name">' + cmdbEsc(node.name) + '</span>'
+    + cls + st + '</div>';
+
+  if (node.children && node.children.length) {
+    html += '<div class="cmdb-tree-children">';
+    node.children.forEach(function(c){ html += cmdbRenderNode(c, depth + 1); });
+    html += '</div>';
+  }
+  return html;
+}
+
+function cmdbEsc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function cmdbToggle(a) {
+  var node = a.closest('.cmdb-tree-node');
+  var children = node.nextElementSibling;
+  if (children && children.classList.contains('cmdb-tree-children')) {
+    var hidden = children.style.display === 'none';
+    children.style.display = hidden ? '' : 'none';
+    a.textContent = hidden ? '▼' : '►';
+  }
+}
+</script>

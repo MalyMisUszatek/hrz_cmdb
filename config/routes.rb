@@ -86,4 +86,9 @@ Rails.application.routes.draw do
       get :results
     end
   end
+
+  # Relations tree (add before the last 'end')
+  get  'cmdb_relations',           to: 'cmdb_relations#index',     as: 'cmdb_relations'
+  get  'cmdb_relations/tree_data', to: 'cmdb_relations#tree_data', as: 'cmdb_relations_tree_data'
+
 end

@@ -1,0 +1,33 @@
+<%
+  indent = depth * 28
+  rel_badge = ''
+  if node[:via]
+    dir_arrow = node[:direction_in] ? '↑' : '↓'
+    rel_badge = content_tag(:span, "#{dir_arrow} #{node[:via]}",
+      class: "cmdb-rel-pill cmdb-rel-#{node[:via].gsub('_','-')}")
+  end
+  has_children = node[:children].present?
+%>
+<div class="cmdb-tree-node" style="margin-left:<%= indent %>px">
+  <% if has_children %>
+    <a href="#" class="cmdb-toggle" onclick="cmdbToggle(this);return false;">▼</a>
+  <% else %>
+    <span style="display:inline-block;width:16px"></span>
+  <% end %>
+  <%= rel_badge %>
+  <span class="cmdb-node-name"><%= node[:name] %></span>
+  <% if node[:ci_class].present? %>
+    <em style="color:#888;font-size:11px">(<%= node[:ci_class] %>)</em>
+  <% end %>
+  <% if node[:status].present? %>
+    <span class="cmdb-status-badge"><%= node[:status] %></span>
+  <% end %>
+</div>
+<% if has_children %>
+  <div class="cmdb-tree-children">
+    <% node[:children].each do |child| %>
+      <%= render partial: 'cmdb_relations/tree_node',
+          locals: { node: child, depth: depth + 1 } %>
+    <% end %>
+  </div>
+<% end %>

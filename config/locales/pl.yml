@@ -119,6 +119,20 @@ pl:
     basic_data:
       title: "Dane podstawowe"
 
+      has_relation_type: "Ma relację typu"
+      relation_map: "Mapa relacji CMDB"
+      relation_direction: "Kierunek przeszukiwania"
+      relation_direction_down: "W dół (outgoing)"
+      relation_direction_up: "W górę (incoming)"
+      relation_direction_both: "Obydwa kierunki"
+      relation_depth: "Głębokość"
+      relation_types: "Typy relacji"
+      relation_show: "Pokaż mapę"
+      relation_any: "— dowolna relacja —"
+      relation_none: "— brak relacji —"
+      relation_legend: "Legenda relacji"
+      relations_out: "Relacje wychodzące"
+      relations_in: "Relacje przychodzące"
     fields:
       bezeichnung: "Nazwa"
       kurzbezeichnung: "Nazwa skrócona"

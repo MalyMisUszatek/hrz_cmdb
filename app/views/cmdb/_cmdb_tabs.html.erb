@@ -1,10 +1,14 @@
 <div class="cmdb-tabs-bar">
-  <%= link_to cmdb_queries_path,
-      class: "cmdb-tab #{controller_name == 'cmdb_queries' ? 'active' : ''}" do %>
-    <%= sprite_icon('list') %> Kwerendy CMDB
-  <% end %>
   <%= link_to cmdb_index_path,
       class: "cmdb-tab #{controller_name == 'cmdb' ? 'active' : ''}" do %>
-    <%= sprite_icon('tree') %> Drzewo CMDB
+    <%= sprite_icon('tree') %> CMDB
+  <% end %>
+  <%= link_to cmdb_queries_path,
+      class: "cmdb-tab #{controller_name == 'cmdb_queries' ? 'active' : ''}" do %>
+    Kwerendy CMDB
+  <% end %>
+  <%= link_to cmdb_relations_path,
+      class: "cmdb-tab #{controller_name == 'cmdb_relations' ? 'active' : ''}" do %>
+    <%= sprite_icon('hierarchy') %> Mapa relacji CMDB
   <% end %>
 </div>

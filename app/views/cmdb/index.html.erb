@@ -22,9 +22,6 @@
   <%= render partial: 'cmdb/cmdb_tabs' %>
   <div class="cmdb-topbar">
     <h2><%= l(:label_cmdb) %></h2>
-    <div class="cmdb-topbar-links">
-      <%= link_to sprite_icon('list') + ' Kwerendy CMDB',
-          cmdb_queries_path, class: 'cmdb-topbar-link' %>
     </div>
   </div>
 
@@ -54,6 +51,7 @@
 
 <%= javascript_include_tag 'hrz_cmdb', plugin: 'hrz_cmdb', cache: false %>
 <%= stylesheet_link_tag 'hrz_cmdb', plugin: 'hrz_cmdb', cache: false %>
+<%= stylesheet_link_tag 'cmdb_layout_patch', plugin: 'hrz_cmdb', cache: false %>
 
 <script>
   $(document).ready(function() {
