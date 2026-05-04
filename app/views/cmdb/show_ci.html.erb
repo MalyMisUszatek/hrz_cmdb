@@ -1,0 +1,25 @@
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'hrz_cmdb', plugin: 'hrz_cmdb', media: 'all' %>
+  <%= javascript_include_tag 'hrz_cmdb', plugin: 'hrz_cmdb' %>
+<% end %>
+
+<script>
+  window.HrzCmdb = window.HrzCmdb || {};
+  HrzCmdb.i18n = HrzCmdb.i18n || {};
+  HrzCmdb.i18n.confirmDelete = "<%= j l('hrz_cmdb.ci_relations.confirm_delete') %>";
+
+  // Na stronie standalone brak drzewa jsTree — loadNode zastępujemy reloadem strony.
+  // HrzCmdb.init() nie jest tu wywoływane, więc ten stub pozostaje aktywny.
+  // Na index.html.erb init() nadpisuje loadNode prawdziwą implementacją.
+  HrzCmdb.loadNode = function(nodeType, nodeId) {
+    window.location.reload();
+  };
+</script>
+
+<div class="contextual">
+  <%= link_to l('button_back'), '/cmdb', class: 'icon icon-cancel' %>
+</div>
+
+<h2><%= @ci.display_name %></h2>
+
+<%= render partial: 'ci_details', locals: { ci: @ci, can_edit: @can_edit } %>

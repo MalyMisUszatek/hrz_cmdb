@@ -485,12 +485,20 @@ class CmdbController < ApplicationController
   # Shows details of a specific CI (Configuration Item).
   # Uses @ci instance variable set by find_ci before_action.
   # Returns: HTML partial or JSON representation
+
   def show_ci
+    @ci = HrzcmCi.find(params[:id])
+    @can_edit = can_edit?
+
+    if request.xhr?
+      render partial: 'ci_details', locals: { ci: @ci, can_edit: @can_edit }
+  else
     respond_to do |format|
-      format.html { render partial: 'ci_details', locals: { ci: @ci, can_edit: can_edit? } }
+      format.html
       format.json { render json: @ci }
     end
   end
+end
 
   # Renders form for creating a new CI.
   # Returns: HTML partial with new CI form
