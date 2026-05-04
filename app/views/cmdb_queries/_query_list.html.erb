@@ -1,0 +1,29 @@
+<table class="list">
+  <thead>
+    <tr>
+      <th><%= l(:field_name) %></th>
+      <th><%= l('hrz_cmdb.queries.entity_type') %></th>
+      <% if show_author %><th><%= l('hrz_cmdb.queries.author') %></th><% end %>
+      <th><%= l(:field_description) %></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% queries.each do |q| %>
+      <tr>
+        <td><%= link_to q.name, results_cmdb_query_path(q) %></td>
+        <td><%= l("hrz_cmdb.queries.entity_#{q.entity_type}") %></td>
+        <% if show_author %><td><%= q.user&.name %></td><% end %>
+        <td><%= q.description %></td>
+        <td class="buttons">
+          <% if q.user_id == User.current.id || User.current.admin? %>
+            <%= link_to l(:button_edit), edit_cmdb_query_path(q), class: 'icon icon-edit' %>
+            <%= link_to l(:button_delete), cmdb_query_path(q), method: :delete,
+                data: { confirm: l('hrz_cmdb.queries.confirm_delete') },
+                class: 'icon icon-del' %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

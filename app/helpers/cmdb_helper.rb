@@ -128,4 +128,19 @@ module CmdbHelper
 
     javascript_tag "window.hrz_cmdb_translations = #{translations.to_json};"
   end
+
+  def format_query_result_value(record, column)
+    val = record.respond_to?(column) ? record.send(column) : nil
+    case column
+    when 'j_ci_class_id'    then HrzcmCiClass.find_by(id: val)&.b_name_full.to_s
+    when 'j_location_id'    then HrzcmLocation.find_by(id: val)&.b_name_full.to_s
+    when 'j_status_id'      then HrzcmLifecycleStatus.find_by(id: val)&.b_name_full.to_s
+    when 'j_type_id'        then HrzcmLocatHier.find_by(id: val)&.b_name_abbr.to_s
+    when 'j_part_of1_id'    then HrzcmLocation.find_by(id: val)&.b_name_full.to_s
+    when 'j_subclass_of_id' then HrzcmCiClass.find_by(id: val)&.b_name_full.to_s
+    when 'created_on', 'updated_on' then val&.strftime('%Y-%m-%d %H:%M').to_s
+    else val.to_s
+    end
+  end
+
 end

@@ -19,7 +19,14 @@
 <% html_title(l(:label_cmdb)) %>
 
 <div id="cmdb-container">
-  <h2><%= l(:label_cmdb) %></h2>
+  <%= render partial: 'cmdb/cmdb_tabs' %>
+  <div class="cmdb-topbar">
+    <h2><%= l(:label_cmdb) %></h2>
+    <div class="cmdb-topbar-links">
+      <%= link_to sprite_icon('list') + ' Kwerendy CMDB',
+          cmdb_queries_path, class: 'cmdb-topbar-link' %>
+    </div>
+  </div>
 
   <div class="cmdb-content">
     <div id="cmdb-sidebar" class="cmdb-sidebar">

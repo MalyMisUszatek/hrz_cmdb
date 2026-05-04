@@ -17,7 +17,7 @@
 #          Provides the jsTree data endpoint and enforces group-based permissions for all CMDB entities.
 
 class CmdbController < ApplicationController
-  before_action :check_permissions
+  before_action :check_permissions, except: [:fk_options]
   before_action :find_location, only: [:show_location, :update_location, :destroy_location]
   before_action :find_ci_class, only: [:show_ci_class, :update_ci_class, :destroy_ci_class]
   before_action :find_ci, only: [:show_ci, :update_ci, :destroy_ci]
@@ -680,6 +680,24 @@ end
     else
       render json: { success: false, errors: @ext_sys.errors.full_messages }
     end
+  end
+
+
+  def fk_options
+    field = params[:field].to_s
+    options = case field
+    when "j_ci_class_id", "j_subclass_of_id"
+      HrzcmCiClass.order(:b_name_full).map { |r| { value: r.id, label: r.b_name_full } }
+    when "j_location_id", "j_part_of1_id"
+      HrzcmLocation.order(:b_name_full).map { |r| { value: r.id, label: r.b_name_full } }
+    when "j_status_id"
+      HrzcmLifecycleStatus.order(:b_name_full).map { |r| { value: r.id, label: r.b_name_full } }
+    when "j_type_id"
+      HrzcmLocatHier.order(:b_name_abbr).map { |r| { value: r.id, label: r.b_name_abbr } }
+    else
+      []
+    end
+    render json: options
   end
 
   private

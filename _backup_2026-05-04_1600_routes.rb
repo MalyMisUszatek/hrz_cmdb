@@ -19,7 +19,6 @@
 
 Rails.application.routes.draw do
   # CMDB main routes
-  get '/cmdb/fk_options', to: 'cmdb#fk_options', as: :cmdb_fk_options
   resources :cmdb do
     collection do
       get 'tree_data'
@@ -81,9 +80,12 @@ Rails.application.routes.draw do
     post 'replace',       to: 'ci_relations#replace', as: :replace
   end
 
-  resources :cmdb_queries, path: '/cmdb_queries' do
-    member do
-      get :results
+  scope '/cmdb', as: :cmdb do
+    resources :cmdb_queries, path: 'queries', as: :queries do
+      member do
+        get :results
+      end
     end
   end
+
 end

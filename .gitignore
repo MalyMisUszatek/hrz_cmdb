@@ -1,3 +1,9 @@
 .claude
 Gemfile.lock
 _backup_*/
+
+# Backup files
+*.bak_*
+_backup_*/
+BACKUP_*/
+CONTEXT_*.md

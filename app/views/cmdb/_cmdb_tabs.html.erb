@@ -1,0 +1,10 @@
+<div class="cmdb-tabs-bar">
+  <%= link_to cmdb_queries_path,
+      class: "cmdb-tab #{controller_name == 'cmdb_queries' ? 'active' : ''}" do %>
+    <%= sprite_icon('list') %> Kwerendy CMDB
+  <% end %>
+  <%= link_to cmdb_index_path,
+      class: "cmdb-tab #{controller_name == 'cmdb' ? 'active' : ''}" do %>
+    <%= sprite_icon('tree') %> Drzewo CMDB
+  <% end %>
+</div>

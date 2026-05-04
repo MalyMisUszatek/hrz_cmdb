@@ -1,0 +1,227 @@
+/* CMDB 3-Column Layout Patch | 2026-05-04 */
+
+.cmdb-3col {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  min-height: 600px;
+}
+.cmdb-col-tree {
+  flex: 0 0 300px;
+  min-width: 180px;
+}
+.cmdb-col-main {
+  flex: 1 1 0%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cmdb-col-queries {
+  flex: 0 0 220px;
+  min-width: 160px;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  max-height: 700px;
+  overflow-y: auto;
+}
+.cmdb-query-panel {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+}
+.cmdb-query-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #e8e8e8;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid #ddd;
+  border-radius: 4px 4px 0 0;
+}
+.cmdb-query-panel-header:hover { background: #ddd; }
+.cmdb-panel-title {
+  font-weight: bold;
+  font-size: 0.95em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cmdb-panel-actions { display: flex; align-items: center; gap: 8px; }
+.cmdb-panel-actions .icon-only { opacity: 0.65; line-height: 1; text-decoration: none; }
+.cmdb-panel-actions .icon-only:hover { opacity: 1; }
+.cmdb-chevron { font-size: 0.8em; color: #666; margin-left: 4px; }
+.cmdb-panel-body { padding: 10px 12px; font-size: 0.9em; }
+.cmdb-filters-display th,
+.cmdb-filters-display td { padding: 3px 8px; font-size: 0.88em; }
+.cmdb-no-filters { color: #888; font-size: 0.9em; margin: 4px 0; }
+.cmdb-results-panel { flex: 1; }
+.cmdb-results-meta { margin-bottom: 8px; font-size: 0.9em; color: #555; }
+.cmdb-query-desc { color: #888; font-style: italic; }
+.cmdb-results-table { width: 100%; font-size: 0.9em; }
+.cmdb-details-placeholder { padding: 40px 20px; text-align: center; color: #999; }
+.cmdb-qsidebar-header {
+  padding: 10px 12px;
+  background: #e0e0e0;
+  border-bottom: 1px solid #ccc;
+  font-weight: bold;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.cmdb-qsidebar-section { padding: 4px 0; border-bottom: 1px solid #eee; }
+.cmdb-qsidebar-section-title {
+  padding: 5px 10px;
+  font-size: 0.78em;
+  font-weight: bold;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cmdb-qlist { list-style: none; padding: 0; margin: 0; }
+.cmdb-qlist-item { border-left: 3px solid transparent; transition: background 0.1s; }
+.cmdb-qlist-item:hover { background: #efefef; }
+.cmdb-qlist-item.active { border-left-color: #169; background: #e4f0f5; }
+.cmdb-qlist-link {
+  display: block;
+  padding: 5px 10px 2px 10px;
+  font-size: 0.85em;
+  text-decoration: none;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cmdb-qlist-item.active .cmdb-qlist-link { color: #169; font-weight: bold; }
+.cmdb-qlist-meta { display: block; padding: 0 10px 4px 10px; font-size: 0.75em; color: #999; }
+.cmdb-qsidebar-footer {
+  padding: 8px 10px;
+  border-top: 1px solid #ddd;
+  background: #f5f5f5;
+  position: sticky;
+  bottom: 0;
+}
+.cmdb-qsidebar-new {
+  font-size: 0.82em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #169;
+  text-decoration: none;
+}
+.cmdb-qsidebar-new:hover { text-decoration: underline; }
+@media (max-width: 900px) {
+  .cmdb-3col { flex-wrap: wrap; }
+  .cmdb-col-tree  { flex: 0 0 100%; max-height: 250px; }
+  .cmdb-col-main  { flex: 1 1 100%; }
+  .cmdb-col-queries { flex: 0 0 100%; max-height: 180px; }
+}
+
+/* Topbar CMDB - nagłówek z linkiem do kwerend */
+.cmdb-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.cmdb-topbar h2 { margin: 0; }
+.cmdb-topbar-links { display: flex; gap: 10px; }
+.cmdb-topbar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: #e8f4f8;
+  border: 1px solid #a0c8d8;
+  border-radius: 3px;
+  font-size: 0.9em;
+  text-decoration: none;
+  color: #169;
+}
+.cmdb-topbar-link:hover {
+  background: #cce6f0;
+  text-decoration: none;
+}
+
+/* Przyciski akcji w sidebarze kwerend */
+.cmdb-qlist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px 2px 10px;
+}
+.cmdb-qlist-link {
+  display: block;
+  padding: 0;
+  font-size: 0.85em;
+  text-decoration: none;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+.cmdb-qlist-actions {
+  display: none;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+.cmdb-qlist-item:hover .cmdb-qlist-actions { display: flex; }
+.cmdb-qaction-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 3px;
+  border-radius: 2px;
+  opacity: 0.6;
+  text-decoration: none;
+  line-height: 1;
+}
+.cmdb-qaction-btn:hover { opacity: 1; background: rgba(0,0,0,0.08); }
+.cmdb-qaction-del:hover { color: #c00; background: rgba(200,0,0,0.08); }
+
+/* CMDB Tabs */
+.cmdb-tabs-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #c8c8c8;
+  margin-bottom: 12px;
+}
+.cmdb-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 18px;
+  font-size: 0.9em;
+  text-decoration: none;
+  color: #555;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  margin-bottom: -2px;
+  background: #f0f0f0;
+  transition: background 0.15s;
+}
+.cmdb-tab:hover {
+  background: #e0e0e0;
+  color: #333;
+  text-decoration: none;
+}
+.cmdb-tab.active {
+  background: #fff;
+  color: #169;
+  border-color: #c8c8c8;
+  font-weight: bold;
+}

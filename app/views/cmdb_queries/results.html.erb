@@ -1,0 +1,59 @@
+<% html_title(@query.name) %>
+
+<div class="contextual">
+  <% if @query.user_id == User.current.id || User.current.admin? %>
+    <%= link_to l(:button_edit), edit_cmdb_query_path(@query), class: 'icon icon-edit' %>
+  <% end %>
+  <%= link_to 'Export CSV', results_cmdb_query_path(@query, format: :csv), class: 'icon icon-export' %>
+  <%= link_to l('hrz_cmdb.queries.all_queries'), cmdb_queries_path, class: 'icon icon-list' %>
+</div>
+
+<h2><%= @query.name %></h2>
+<% if @query.description.present? %>
+  <p class="description"><%= @query.description %></p>
+<% end %>
+<p><strong><%= l("hrz_cmdb.queries.entity_#{@query.entity_type}") %></strong>
+   &mdash; <%= l('hrz_cmdb.queries.results_count', count: @entry_count) %></p>
+
+<% if @entries.any? %>
+  <table class="list">
+    <thead>
+      <tr>
+        <% @query.columns_data.each do |col| %>
+          <%
+            new_dir = (params[:sort] == col && params[:direction] == 'asc') ? 'desc' : 'asc'
+            icon = params[:sort] == col ? (new_dir == 'desc' ? ' ▲' : ' ▼') : ''
+          %>
+          <th>
+            <%= link_to(
+              (l("hrz_cmdb.fields.#{col}", default: col) + icon).html_safe,
+              results_cmdb_query_path(@query, sort: col, direction: new_dir, page: 1)
+            ) %>
+          </th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% @entries.each do |record| %>
+        <tr>
+          <% @query.columns_data.each_with_index do |col, idx| %>
+            <td>
+              <% val = format_query_result_value(record, col) %>
+              <% if idx == 0 && @query.entity_type == 'ci' %>
+                <%= link_to val, "/cmdb/ci/#{record.id}" %>
+              <% else %>
+                <%= val %>
+              <% end %>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <div class="pagination">
+    <%= pagination_links_full @entry_pages, @entry_count, per_page_links: true %>
+  </div>
+<% else %>
+  <p class="nodata"><%= l('hrz_cmdb.queries.no_results') %></p>
+<% end %>

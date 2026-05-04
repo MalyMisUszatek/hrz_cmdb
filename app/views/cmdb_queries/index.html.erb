@@ -1,0 +1,166 @@
+<% html_title(l('hrz_cmdb.queries.title')) %>
+
+<div id="cmdb-container">
+  <%= render partial: 'cmdb/cmdb_tabs' %>
+  <div class="cmdb-content cmdb-3col">
+
+    <%# === LEWA: drzewko CMDB === %>
+    <div id="cmdb-sidebar" class="cmdb-sidebar cmdb-col-tree">
+      <div id="cmdb-tree-container" class="tree-container">
+        <div class="tree-header">
+          <%= sprite_icon('folder') %>
+          <%= l('hrz_cmdb.locations.title') %>
+        </div>
+        <div id="cmdb-tree" class="tree-content"></div>
+      </div>
+    </div>
+
+    <%# === ŚRODEK: filtry + wyniki === %>
+    <div id="cmdb-main" class="cmdb-main cmdb-col-main">
+
+      <div id="cmdb-query-panel" class="cmdb-query-panel">
+        <div class="cmdb-query-panel-header" id="cmdb-panel-toggle">
+          <span class="cmdb-panel-title">
+            <%= sprite_icon('filter') %>
+            <% if @active_query %>
+              <%= @active_query.name %>
+            <% else %>
+              Filtry
+            <% end %>
+          </span>
+          <span class="cmdb-panel-actions">
+            <% if @active_query %>
+              <% if @active_query.user_id == User.current.id || User.current.admin? %>
+                <%= link_to sprite_icon('edit'), edit_cmdb_query_path(@active_query),
+                    class: 'icon-only', title: l(:button_edit) %>
+              <% end %>
+              <%= link_to sprite_icon('export'),
+                  results_cmdb_query_path(@active_query, format: :csv),
+                  class: 'icon-only', title: 'Export CSV' %>
+            <% end %>
+            <%= link_to sprite_icon('add'), new_cmdb_query_path,
+                class: 'icon-only', title: l('hrz_cmdb.queries.new') %>
+            <span class="cmdb-chevron" id="panel-chevron">&#9660;</span>
+          </span>
+        </div>
+
+        <div id="cmdb-panel-body" class="cmdb-panel-body">
+          <% if @active_query %>
+            <% if @active_query.filters_data.any? %>
+              <table class="list cmdb-filters-display">
+                <thead>
+                  <tr>
+                    <th>Pole</th><th>Operator</th><th>Wartość</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @active_query.filters_data.each do |f| %>
+                    <tr>
+                      <td><%= l("hrz_cmdb.fields.#{f['field']}", default: f['field']) %></td>
+                      <td><code><%= f['operator'] %></code></td>
+                      <td><%= f['value'] %></td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            <% else %>
+              <p class="cmdb-no-filters"><em>Brak filtrów &mdash; wyświetlane są wszystkie rekordy.</em></p>
+            <% end %>
+          <% else %>
+            <p class="cmdb-no-filters"><em>Wybierz kwerendę z listy po prawej stronie lub utwórz nową.</em></p>
+          <% end %>
+        </div>
+      </div>
+
+      <div id="cmdb-results-panel" class="cmdb-results-panel">
+        <% if @active_query %>
+          <div class="cmdb-results-meta">
+            <strong><%= l("hrz_cmdb.queries.entity_#{@active_query.entity_type}") %></strong>
+            &mdash; <%= "#{@entry_count} wyników" %>
+            <% if @active_query.description.present? %>
+              <span class="cmdb-query-desc"> &mdash; <%= @active_query.description %></span>
+            <% end %>
+          </div>
+          <% if @entries&.any? %>
+            <table class="list cmdb-results-table">
+              <thead>
+                <tr>
+                  <% @active_query.columns_data.each do |col| %>
+                    <%
+                      new_dir = (params[:sort] == col && params[:direction] == 'asc') ? 'desc' : 'asc'
+                      icon = params[:sort] == col ? (new_dir == 'desc' ? ' &#9650;' : ' &#9660;') : ''
+                    %>
+                    <th>
+                      <%= link_to(
+                        (l("hrz_cmdb.fields.#{col}", default: col) + icon).html_safe,
+                        cmdb_queries_path(query_id: @active_query.id, sort: col,
+                                          direction: new_dir, page: 1)
+                      ) %>
+                    </th>
+                  <% end %>
+                </tr>
+              </thead>
+              <tbody>
+                <% @entries.each do |record| %>
+                  <tr>
+                    <% @active_query.columns_data.each_with_index do |col, idx| %>
+                      <td>
+                        <% val = format_query_result_value(record, col) %>
+                        <% if idx == 0 && @active_query.entity_type == 'ci' %>
+                          <%= link_to val, "/cmdb/ci/#{record.id}" %>
+                        <% else %>
+                          <%= val %>
+                        <% end %>
+                      </td>
+                    <% end %>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+            <div class="pagination">
+              <%= pagination_links_full @entry_pages, @entry_count, per_page_links: true %>
+            </div>
+          <% else %>
+            <p class="nodata"><%= l('hrz_cmdb.queries.no_results') %></p>
+          <% end %>
+        <% else %>
+          <div id="cmdb-details" class="cmdb-details-placeholder">
+            <p class="nodata">Wybierz element z drzewka lub kwerendę z listy.</p>
+          </div>
+        <% end %>
+      </div>
+
+    </div>
+
+    <%# === PRAWA: lista kwerend === %>
+    <div id="cmdb-queries-sidebar" class="cmdb-col-queries">
+      <%= render partial: 'cmdb_queries/queries_sidebar',
+          locals: { active_query: @active_query,
+                    public_queries: @public_queries,
+                    my_queries: @my_queries } %>
+    </div>
+
+  </div>
+</div>
+
+<%= javascript_include_tag 'hrz_cmdb', plugin: 'hrz_cmdb', cache: false %>
+<%= stylesheet_link_tag 'hrz_cmdb', plugin: 'hrz_cmdb', cache: false %>
+<%= stylesheet_link_tag 'cmdb_layout_patch', plugin: 'hrz_cmdb', cache: false %>
+
+<script>
+$(document).ready(function() {
+  if (typeof HrzCmdb !== 'undefined') {
+    HrzCmdb.init({
+      treeDataUrl: '<%= tree_data_cmdb_index_path %>',
+      canEdit: false,
+      canEditBasicData: false,
+      tikiBaseUrl: '<%= Setting.plugin_hrz_cmdb['tiki_base_url'].to_s.html_safe %>'
+    });
+  }
+  $('#cmdb-panel-toggle').on('click', function() {
+    $('#cmdb-panel-body').slideToggle(200);
+    var ch = $('#panel-chevron');
+    ch.html(ch.html().trim() === '&#9660;' ? '&#9650;' : '&#9660;');
+  });
+});
+</script>

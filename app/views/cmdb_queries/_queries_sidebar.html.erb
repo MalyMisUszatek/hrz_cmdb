@@ -1,0 +1,81 @@
+<div class="cmdb-qsidebar-header">
+  <%= sprite_icon('list') %> Kwerendy
+</div>
+
+<% if my_queries.any? %>
+  <div class="cmdb-qsidebar-section">
+    <div class="cmdb-qsidebar-section-title">
+      <%= sprite_icon('user') %> Moje kwerendy
+    </div>
+    <ul class="cmdb-qlist">
+      <% my_queries.each do |q| %>
+        <li class="cmdb-qlist-item <%= active_query&.id == q.id ? 'active' : '' %>">
+          <div class="cmdb-qlist-row">
+            <%= link_to q.name, cmdb_queries_path(query_id: q.id),
+                class: 'cmdb-qlist-link', title: q.description.presence %>
+            <span class="cmdb-qlist-actions">
+              <%= link_to sprite_icon('edit'),
+                  edit_cmdb_query_path(q),
+                  class: 'cmdb-qaction-btn',
+                  title: 'Edytuj' %>
+              <%= link_to sprite_icon('del'),
+                  cmdb_query_path(q),
+                  method: :delete,
+                  data: { confirm: "Usunąć kwerendę \"#{q.name}\"?" },
+                  class: 'cmdb-qaction-btn cmdb-qaction-del',
+                  title: 'Usuń' %>
+            </span>
+          </div>
+          <span class="cmdb-qlist-meta">
+            <%= l("hrz_cmdb.queries.entity_#{q.entity_type}", default: q.entity_type) %>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<% if public_queries.any? %>
+  <div class="cmdb-qsidebar-section">
+    <div class="cmdb-qsidebar-section-title">
+      <%= sprite_icon('group') %> Kwerendy publiczne
+    </div>
+    <ul class="cmdb-qlist">
+      <% public_queries.each do |q| %>
+        <li class="cmdb-qlist-item <%= active_query&.id == q.id ? 'active' : '' %>">
+          <div class="cmdb-qlist-row">
+            <%= link_to q.name, cmdb_queries_path(query_id: q.id),
+                class: 'cmdb-qlist-link', title: q.description.presence %>
+            <% if q.user_id == User.current.id || User.current.admin? %>
+              <span class="cmdb-qlist-actions">
+                <%= link_to sprite_icon('edit'),
+                    edit_cmdb_query_path(q),
+                    class: 'cmdb-qaction-btn',
+                    title: 'Edytuj' %>
+                <%= link_to sprite_icon('del'),
+                    cmdb_query_path(q),
+                    method: :delete,
+                    data: { confirm: "Usunąć kwerendę \"#{q.name}\"?" },
+                    class: 'cmdb-qaction-btn cmdb-qaction-del',
+                    title: 'Usuń' %>
+              </span>
+            <% end %>
+          </div>
+          <span class="cmdb-qlist-meta">
+            <%= l("hrz_cmdb.queries.entity_#{q.entity_type}", default: q.entity_type) %>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<% if my_queries.empty? && public_queries.empty? %>
+  <p class="nodata" style="padding:8px;font-size:0.85em;">Brak kwerend.</p>
+<% end %>
+
+<div class="cmdb-qsidebar-footer">
+  <%= link_to new_cmdb_query_path, class: 'cmdb-qsidebar-new' do %>
+    <%= sprite_icon('add') %> Nowa kwerenda
+  <% end %>
+</div>

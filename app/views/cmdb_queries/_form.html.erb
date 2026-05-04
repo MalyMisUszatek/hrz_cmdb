@@ -1,0 +1,289 @@
+<%
+  entity_type   = @query.entity_type || 'ci'
+  avail_cols    = HrzcmQuery::AVAILABLE_COLUMNS[entity_type] || []
+  selected_cols = @query.columns_data
+  avail_cols_remaining = avail_cols.map { |c| c[0] }.reject { |c| selected_cols.include?(c) }
+  text_fields = HrzcmQuery::TEXT_FIELDS
+  fk_fields   = HrzcmQuery::FK_FIELDS
+  date_fields = HrzcmQuery::DATE_FIELDS
+  text_ops = [['zawiera (~)', '~'], ['nie zawiera (!~)', '!~'], ['równa się (=)', '='], ['nie równa się (!=)', '!=']]
+  fk_ops   = [['równa się (=)', '='], ['nie równa się (!=)', '!=']]
+  date_ops = [['=', '='], ['>=', '>='], ['<=', '<='], ['między', 'between']]
+  filters_data = @query.filters_data
+%>
+<%= form_with model: @query,
+      url: @query.new_record? ? cmdb_queries_path : cmdb_query_path(@query),
+      method: @query.new_record? ? :post : :patch,
+      local: true, id: 'cmdb-query-form' do |f| %>
+  <% if @query.errors.any? %>
+    <div id="errorExplanation">
+      <ul><% @query.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+    </div>
+  <% end %>
+  <%= f.hidden_field :filters, id: 'hidden_filters' %>
+  <%= f.hidden_field :columns, id: 'hidden_columns' %>
+  <div class="box tabular">
+    <p>
+      <%= f.label :name, l(:field_name) %><span class="required"> *</span>
+      <%= f.text_field :name, size: 60 %>
+    </p>
+    <p>
+      <%= f.label :description, l(:field_description) %>
+      <%= f.text_area :description, rows: 3, cols: 60 %>
+    </p>
+    <p>
+      <%= f.label :entity_type, l('hrz_cmdb.queries.entity_type') %>
+      <% if @query.new_record? %>
+        <%= f.select :entity_type,
+            HrzcmQuery::ENTITY_TYPES.map { |k| [l("hrz_cmdb.queries.entity_#{k}"), k] },
+            {}, { id: 'entity_type_select' } %>
+      <% else %>
+        <%= f.hidden_field :entity_type %>
+        <strong><%= l("hrz_cmdb.queries.entity_#{@query.entity_type}") %></strong>
+      <% end %>
+    </p>
+    <p>
+      <%= f.label :is_public, l('hrz_cmdb.queries.is_public') %>
+      <%= f.check_box :is_public %>
+    </p>
+  </div>
+  <fieldset id="filters-fieldset">
+    <legend><%= l('hrz_cmdb.queries.filters') %></legend>
+    <table class="query-filters">
+      <tbody id="filters-tbody">
+        <% filters_data.each_with_index do |f_row, i| %>
+          <tr class="filter-row">
+            <td>
+              <select class="filter-field">
+                <% avail_cols.each do |col| %>
+                  <option value="<%= col[0] %>" <%= 'selected' if f_row['field'] == col[0] %>>
+                    <%= l("hrz_cmdb.fields.#{col[0]}", default: col[0]) %>
+                  </option>
+                <% end %>
+              </select>
+            </td>
+            <td>
+              <select class="filter-op">
+                <% text_ops.each do |label, val| %>
+                  <option value="<%= val %>" <%= 'selected' if f_row['operator'] == val %>><%= label %></option>
+                <% end %>
+              </select>
+            </td>
+            <td><input type="text" class="filter-val" value="<%= f_row['value'] %>" size="30" /></td>
+            <td><a href="#" onclick="this.closest('tr').remove();return false;" class="icon icon-del"></a></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <p style="margin-top:6px">
+      <strong>Dodaj filtr:</strong>
+      <select id="add-filter-field">
+        <option value="">— wybierz pole —</option>
+        <% avail_cols.each do |col| %>
+          <option value="<%= col[0] %>"
+            data-type="<%= text_fields.include?(col[0]) ? 'text' : fk_fields.include?(col[0]) ? 'fk' : 'date' %>">
+            <%= l("hrz_cmdb.fields.#{col[0]}", default: col[0]) %>
+          </option>
+        <% end %>
+      </select>
+      <a href="#" class="button" onclick="cmdbAddFilter();return false;">+ Dodaj</a>
+    </p>
+  </fieldset>
+  <fieldset id="columns-fieldset">
+    <legend><%= l('hrz_cmdb.queries.columns') %></legend>
+    <table><tr>
+      <td style="vertical-align:top">
+        <label><strong>Dostępne kolumny</strong></label><br/>
+        <select id="available-columns" size="12" style="width:220px;min-height:180px;border:1px solid #ccc;padding:4px" multiple>
+          <% avail_cols_remaining.each do |col| %>
+            <option value="<%= col %>"><%= l("hrz_cmdb.fields.#{col}", default: col) %></option>
+          <% end %>
+        </select>
+      </td>
+      <td style="vertical-align:middle;padding:0 8px;text-align:center">
+        <a href="#" class="button" style="display:block;margin:4px 0" onclick="cmdbMoveCols('right');return false;">→</a>
+        <a href="#" class="button" style="display:block;margin:4px 0" onclick="cmdbMoveCols('left');return false;">←</a>
+      </td>
+      <td style="vertical-align:top">
+        <label><strong>Wybrane kolumny</strong></label><br/>
+        <select id="selected-columns" size="12" style="width:220px;min-height:180px;border:1px solid #ccc;padding:4px" multiple>
+          <% selected_cols.each do |col| %>
+            <option value="<%= col %>"><%= l("hrz_cmdb.fields.#{col}", default: col) %></option>
+          <% end %>
+        </select>
+      </td>
+      <td style="vertical-align:middle;padding:0 4px;text-align:center">
+        <a href="#" class="button" style="display:block;margin:4px 0" onclick="cmdbMoveOrder('top');return false;">↑↑</a>
+        <a href="#" class="button" style="display:block;margin:4px 0" onclick="cmdbMoveOrder('up');return false;">↑</a>
+        <a href="#" class="button" style="display:block;margin:4px 0" onclick="cmdbMoveOrder('down');return false;">↓</a>
+        <a href="#" class="button" style="display:block;margin:4px 0" onclick="cmdbMoveOrder('bottom');return false;">↓↓</a>
+      </td>
+    </tr></table>
+  </fieldset>
+  <fieldset>
+    <legend>Opcje</legend>
+    <div class="box tabular">
+      <p>
+        <%= f.label :sort_column, l('hrz_cmdb.queries.sort_column') %>
+        <%= f.select :sort_column,
+            [['', '']] + avail_cols.map { |c| [l("hrz_cmdb.fields.#{c[0]}", default: c[0]), c[0]] } %>
+      </p>
+      <p>
+        <%= f.label :sort_direction, l('hrz_cmdb.queries.sort_direction') %>
+        <%= f.select :sort_direction,
+            [[l('hrz_cmdb.queries.sort_asc'), 'asc'], [l('hrz_cmdb.queries.sort_desc'), 'desc']] %>
+      </p>
+    </div>
+  </fieldset>
+  <p>
+    <%= f.submit l(:button_save), class: 'button-positive', id: 'query-submit-btn' %>
+    <%= link_to l(:button_cancel),
+        @query.new_record? ? cmdb_queries_path : results_cmdb_query_path(@query),
+        class: 'button' %>
+  </p>
+<% end %>
+<script>
+var cmdbTextOps = [['zawiera (~)','~'],['nie zawiera (!~)','!~'],['równa się (=)','='],['nie równa się (!=)','!=']];
+var cmdbFkOps   = [['równa się (=)','='],['nie równa się (!=)','!=']];
+var cmdbDateOps = [['=','='],['>=','>='],['<=','<='],['między','between']];
+var cmdbFkUrl   = '<%= cmdb_fk_options_path %>';
+var cmdbFkCache = {};
+
+function cmdbGetOps(type) {
+  if (type==='date') return cmdbDateOps;
+  if (type==='fk')   return cmdbFkOps;
+  return cmdbTextOps;
+}
+
+function cmdbBuildValueInput(fieldVal, fieldType, existingVal) {
+  if (fieldType === 'fk') {
+    var sel = document.createElement('select');
+    sel.className = 'filter-val';
+    sel.style.minWidth = '180px';
+    var loadOpts = function(options) {
+      sel.innerHTML = '<option value="">— wybierz —</option>';
+      options.forEach(function(o) {
+        var opt = document.createElement('option');
+        opt.value = o.value;
+        opt.text  = o.label;
+        if (String(o.value) === String(existingVal)) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    };
+    if (cmdbFkCache[fieldVal]) {
+      loadOpts(cmdbFkCache[fieldVal]);
+    } else {
+      $.getJSON(cmdbFkUrl, {field: fieldVal}, function(data) {
+        cmdbFkCache[fieldVal] = data;
+        loadOpts(data);
+      });
+    }
+    return sel;
+  } else {
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'filter-val';
+    inp.size = 30;
+    inp.value = existingVal || '';
+    return inp;
+  }
+}
+
+function cmdbAddFilter() {
+  var sel = document.getElementById('add-filter-field');
+  var fieldVal  = sel.value;
+  if (!fieldVal) return;
+  var opt       = sel.options[sel.selectedIndex];
+  var fieldType = opt.dataset.type || 'text';
+  var ops       = cmdbGetOps(fieldType);
+  var opHtml    = ops.map(function(o){return '<option value="'+o[1]+'">'+o[0]+'</option>';}).join('');
+  var fieldHtml = '';
+  for(var i=1;i<sel.options.length;i++){
+    fieldHtml += '<option value="'+sel.options[i].value+'"'+(sel.options[i].value===fieldVal?' selected':'')+'>'+sel.options[i].text+'</option>';
+  }
+  var tr = document.createElement('tr');
+  tr.className = 'filter-row';
+  var td1 = '<td><select class="filter-field" onchange="cmdbOnFieldChange(this)">'+fieldHtml+'</select></td>';
+  var td2 = '<td><select class="filter-op">'+opHtml+'</select></td>';
+  var td4 = '<td><a href="#" onclick="this.closest(\'tr\').remove();return false;" class="icon icon-del"></a></td>';
+  tr.innerHTML = td1 + td2 + '<td class="filter-val-td"></td>' + td4;
+  document.getElementById('filters-tbody').appendChild(tr);
+  var valTd = tr.querySelector('.filter-val-td');
+  valTd.appendChild(cmdbBuildValueInput(fieldVal, fieldType, ''));
+  sel.value = '';
+}
+
+function cmdbOnFieldChange(fieldSel) {
+  var row       = fieldSel.closest('tr');
+  var fieldVal  = fieldSel.value;
+  var selOpt    = fieldSel.options[fieldSel.selectedIndex];
+  var addSel    = document.getElementById('add-filter-field');
+  var fieldType = 'text';
+  for(var i=1;i<addSel.options.length;i++){
+    if(addSel.options[i].value===fieldVal){ fieldType=addSel.options[i].dataset.type||'text'; break; }
+  }
+  var ops    = cmdbGetOps(fieldType);
+  var opSel  = row.querySelector('.filter-op');
+  opSel.innerHTML = ops.map(function(o){return '<option value="'+o[1]+'">'+o[0]+'</option>';}).join('');
+  var valTd  = row.querySelector('.filter-val-td');
+  valTd.innerHTML = '';
+  valTd.appendChild(cmdbBuildValueInput(fieldVal, fieldType, ''));
+}
+
+// Podmień istniejące text inputy FK na selecty przy ładowaniu strony
+document.addEventListener('DOMContentLoaded', function() {
+  var addSel = document.getElementById('add-filter-field');
+  document.querySelectorAll('#filters-tbody .filter-row').forEach(function(row) {
+    var fieldSel  = row.querySelector('.filter-field');
+    var fieldVal  = fieldSel ? fieldSel.value : '';
+    var fieldType = 'text';
+    if (addSel) {
+      for(var i=1;i<addSel.options.length;i++){
+        if(addSel.options[i].value===fieldVal){ fieldType=addSel.options[i].dataset.type||'text'; break; }
+      }
+    }
+    if (fieldType === 'fk') {
+      var oldInput = row.querySelector('.filter-val');
+      var existingVal = oldInput ? oldInput.value : '';
+      var valTd = oldInput ? oldInput.parentNode : null;
+      if (valTd) {
+        valTd.className = 'filter-val-td';
+        valTd.innerHTML = '';
+        valTd.appendChild(cmdbBuildValueInput(fieldVal, fieldType, existingVal));
+      }
+    }
+    if (fieldSel) fieldSel.setAttribute('onchange', 'cmdbOnFieldChange(this)');
+  });
+});
+
+function cmdbMoveCols(dir) {
+  var src = document.getElementById(dir==='right'?'available-columns':'selected-columns');
+  var dst = document.getElementById(dir==='right'?'selected-columns':'available-columns');
+  Array.from(src.selectedOptions).forEach(function(o){dst.appendChild(o);});
+}
+
+function cmdbMoveOrder(dir) {
+  var sel = document.getElementById('selected-columns');
+  var selected = Array.from(sel.selectedOptions);
+  if (!selected.length) return;
+  if (dir==='top')    { selected.forEach(function(o){sel.insertBefore(o,sel.firstChild);}); }
+  else if (dir==='bottom') { selected.reverse().forEach(function(o){sel.appendChild(o);}); }
+  else if (dir==='up')   { selected.forEach(function(o){var p=o.previousElementSibling;if(p)sel.insertBefore(o,p);}); }
+  else if (dir==='down') { selected.reverse().forEach(function(o){var n=o.nextElementSibling;if(n)sel.insertBefore(n,o);}); }
+}
+
+document.getElementById('cmdb-query-form').addEventListener('submit', function(){
+  var rows = document.querySelectorAll('#filters-tbody .filter-row');
+  var filters = [];
+  rows.forEach(function(row){
+    var field = row.querySelector('.filter-field').value;
+    var op    = row.querySelector('.filter-op').value;
+    var valEl = row.querySelector('.filter-val');
+    var val   = valEl ? valEl.value : '';
+    if (field && val!=='') filters.push({field:field,operator:op,value:val});
+  });
+  document.getElementById('hidden_filters').value = JSON.stringify(filters);
+  var cols = Array.from(document.getElementById('selected-columns').options).map(function(o){return o.value;});
+  document.getElementById('hidden_columns').value = JSON.stringify(cols);
+});
+</script>
