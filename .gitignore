@@ -7,3 +7,11 @@ _backup_*/
 _backup_*/
 BACKUP_*/
 CONTEXT_*.md
+# Backup files
+_backup_*/
+*.bak*
+*.bak_*
+# Backup files
+_backup_*/
+*.bak*
+*.bak_*
