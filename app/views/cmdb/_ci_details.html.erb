@@ -164,4 +164,9 @@
                  can_edit: can_edit
                } %>
   <% end %>
+  <% if ci.persisted? %>
+    <hr/>
+    <%= render partial: 'ci_history_section', locals: { ci: ci, can_edit: can_edit } %>
+  <% end %>
+
 </div>

@@ -263,3 +263,34 @@
 .cmdb-rel-connected-to { background:#fce7f3; color:#9d174d; }
 .cmdb-rel-depends-on   { background:#ffedd5; color:#9a3412; }
 .cmdb-rel-backs-up     { background:#e0f2fe; color:#0c4a6e; }
+
+/* hide-node button */
+.cmdb-hide-node {
+  display: inline-block;
+  margin-left: 6px;
+  color: #c0392b;
+  font-size: 11px;
+  font-weight: bold;
+  text-decoration: none;
+  opacity: 0.4;
+  vertical-align: middle;
+  line-height: 1;
+}
+.cmdb-tree-node:hover .cmdb-hide-node { opacity: 1; }
+.cmdb-hide-node:hover { color: #e74c3c; }
+
+/* --- CI Audit log badges --- */
+.cmdb-audit-action {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: bold;
+}
+.cmdb-audit-create           { background: #d5f5e3; color: #1e8449; }
+.cmdb-audit-update           { background: #d6eaf8; color: #1a5276; }
+.cmdb-audit-delete           { background: #fadbd8; color: #922b21; }
+.cmdb-audit-relation_added   { background: #fdebd0; color: #784212; }
+.cmdb-audit-relation_removed { background: #f9ebea; color: #922b21; }
+.cmdb-audit-attachment_added { background: #e8daef; color: #6c3483; }
+.cmdb-audit-replaced         { background: #fdfefe; color: #555;    }

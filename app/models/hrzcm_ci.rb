@@ -96,4 +96,33 @@ class HrzcmCi < ActiveRecord::Base
     self.updated_by = User.current&.id if User.current
     self.updated_on = Time.current
   end
+  has_many :audit_logs,      class_name: 'HrzcmCiAudit',       foreign_key: :ci_id, dependent: :destroy
+  has_many :ci_attachments,  class_name: 'HrzcmCiAttachment',   foreign_key: :ci_id, dependent: :destroy
+
+  AUDITED_FIELDS = %w[
+    b_name_full b_name_abbr b_comment b_url_doc
+    j_ci_class_id j_location_id b_producer b_model
+    b_tag_serial j_status_id
+  ].freeze
+
+  after_create  :log_ci_create
+  after_update  :log_ci_changes
+
+  private
+
+  def log_ci_create
+    HrzcmCiAudit.log(self, action: 'create',
+      note: "CI '#{b_name_abbr || b_name_full}' utworzone")
+  end
+
+  def log_ci_changes
+    AUDITED_FIELDS.each do |field|
+      next unless saved_change_to_attribute?(field)
+      old_v, new_v = saved_change_to_attribute(field)
+      label = I18n.t("hrz_cmdb.fields.#{field}", default: field)
+      HrzcmCiAudit.log(self, action: 'update',
+        field: label, old_val: old_v, new_val: new_v)
+    end
+  end
+
 end

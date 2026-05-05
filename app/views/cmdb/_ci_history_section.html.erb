@@ -1,0 +1,82 @@
+<%# Partial: historia zmian + załączniki CI — wbudowane w kartę CI %>
+<% audit_logs  = HrzcmCiAudit.for_ci(ci.id) %>
+<% attachments = HrzcmCiAttachment.for_ci(ci.id) %>
+<% can_edit_hist = HrzCmdb::PermissionHelper.user_has_permission?(User.current, 'edit_cmdb') %>
+
+<div style="display:flex;gap:20px;align-items:flex-start;margin-top:10px">
+
+  <%# Historia zmian %>
+  <div style="flex:1;min-width:0">
+    <h3 style="margin-bottom:6px">&#128203; <%= I18n.t('hrz_cmdb.history_and_docs') %></h3>
+    <% if audit_logs.any? %>
+      <table class="list" style="font-size:12px">
+        <thead><tr>
+          <th style="width:130px">Data</th>
+          <th style="width:120px">Użytkownik</th>
+          <th style="width:100px">Akcja</th>
+          <th>Szczegóły</th>
+        </tr></thead>
+        <tbody>
+          <% audit_logs.each do |log| %>
+            <tr>
+              <td><%= log.created_at.strftime('%Y-%m-%d %H:%M') %></td>
+              <td><%= log.user&.name || '—' %></td>
+              <td><span class="cmdb-audit-action cmdb-audit-<%= log.action %>">
+                <%= I18n.t("hrz_cmdb.audit.actions.#{log.action}", default: log.action) %>
+              </span></td>
+              <td>
+                <% if log.field_name.present? %>
+                  <strong><%= log.field_name %>:</strong>
+                  <span style="color:#c0392b;text-decoration:line-through"><%= log.old_value.presence || '—' %></span>
+                  &rarr; <span style="color:#27ae60"><%= log.new_value.presence || '—' %></span>
+                <% elsif log.note.present? %>
+                  <%= log.note %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="nodata" style="font-size:12px">Brak historii zmian.</p>
+    <% end %>
+  </div>
+
+  <%# Załączniki %>
+  <div style="min-width:300px;max-width:360px">
+    <h3 style="margin-bottom:6px">&#128206; Dokumenty</h3>
+    <% if attachments.any? %>
+      <table class="list" style="font-size:12px;margin-bottom:8px">
+        <thead><tr><th>Plik</th><th>Opis</th><th>Rozmiar</th><th></th></tr></thead>
+        <tbody>
+          <% attachments.each do |att| %>
+            <tr>
+              <td><%= link_to att.filename, cmdb_ci_attachment_download_path(ci_id: ci.id, att_id: att.id) %></td>
+              <td style="font-size:11px"><%= att.description.presence || '—' %></td>
+              <td><%= att.human_filesize %></td>
+              <td><% if can_edit_hist %>
+                <%= link_to '✕', cmdb_ci_attachment_path(ci_id: ci.id, att_id: att.id),
+                    method: :delete, data: { confirm: 'Usunąć plik?' } %>
+              <% end %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="nodata" style="font-size:12px;margin-bottom:6px">Brak załączników.</p>
+    <% end %>
+
+    <% if can_edit_hist %>
+      <div class="box" style="padding:8px">
+        <strong style="font-size:12px">Dodaj plik:</strong>
+        <%= form_tag cmdb_ci_attachments_path(ci_id: ci.id), multipart: true, style: 'margin-top:4px' do %>
+          <p style="margin:4px 0"><input type="file" name="file" style="width:100%;font-size:12px"></p>
+          <p style="margin:4px 0"><input type="text" name="description" maxlength="512"
+             placeholder="Krótki opis..." style="width:100%;font-size:12px"></p>
+          <p style="margin:4px 0"><%= submit_tag 'Dodaj', class: 'button button-positive' %></p>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+</div>

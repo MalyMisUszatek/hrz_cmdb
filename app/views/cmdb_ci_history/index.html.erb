@@ -1,0 +1,81 @@
+<%= stylesheet_link_tag 'hrz_cmdb', plugin: 'hrz_cmdb', cache: false %>
+<%= stylesheet_link_tag 'cmdb_layout_patch', plugin: 'hrz_cmdb', cache: false %>
+<%= render partial: 'cmdb/cmdb_tabs' %>
+
+<h2><%= @ci.b_name_abbr || @ci.b_name_full %> &mdash; Historia i dokumenty</h2>
+
+<div style="display:flex;gap:20px;align-items:flex-start">
+
+  <div style="flex:1;min-width:0">
+    <h3>&#128203; Historia zmian</h3>
+    <% if @audit_logs.any? %>
+      <table class="list" style="font-size:12px">
+        <thead><tr>
+          <th style="width:140px">Data</th>
+          <th style="width:130px">Użytkownik</th>
+          <th style="width:110px">Akcja</th>
+          <th>Szczegóły</th>
+        </tr></thead>
+        <tbody>
+          <% @audit_logs.each do |log| %>
+            <tr>
+              <td><%= log.created_at.strftime('%Y-%m-%d %H:%M') %></td>
+              <td><%= log.user&.name || '—' %></td>
+              <td><span class="cmdb-audit-action cmdb-audit-<%= log.action %>">
+                <%= I18n.t("hrz_cmdb.audit.actions.#{log.action}", default: log.action) %>
+              </span></td>
+              <td>
+                <% if log.field_name.present? %>
+                  <strong><%= log.field_name %>:</strong>
+                  <span style="color:#c0392b;text-decoration:line-through"><%= log.old_value.presence || '—' %></span>
+                  &rarr; <span style="color:#27ae60"><%= log.new_value.presence || '—' %></span>
+                <% elsif log.note.present? %>
+                  <%= log.note %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="nodata">Brak historii zmian.</p>
+    <% end %>
+  </div>
+
+  <div style="min-width:320px;max-width:380px">
+    <h3>&#128206; Dokumenty i załączniki</h3>
+    <% if @attachments.any? %>
+      <table class="list" style="font-size:12px;margin-bottom:12px">
+        <thead><tr><th>Plik</th><th>Opis</th><th>Rozmiar</th><th>Data</th><th></th></tr></thead>
+        <tbody>
+          <% @attachments.each do |att| %>
+            <tr>
+              <td><%= link_to att.filename, cmdb_ci_attachment_download_path(ci_id: @ci.id, att_id: att.id) %></td>
+              <td><%= att.description.presence || '—' %></td>
+              <td><%= att.human_filesize %></td>
+              <td><%= att.created_at.strftime('%Y-%m-%d') %></td>
+              <td><% if HrzCmdb::PermissionHelper.user_has_permission?(User.current, 'edit_cmdb') %>
+                <%= link_to '✕', cmdb_ci_attachment_path(ci_id: @ci.id, att_id: att.id),
+                    method: :delete, data: { confirm: 'Usunąć plik?' }, class: 'cmdb-hide-node' %>
+              <% end %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="nodata" style="margin-bottom:8px">Brak załączników.</p>
+    <% end %>
+
+    <% if HrzCmdb::PermissionHelper.user_has_permission?(User.current, 'edit_cmdb') %>
+      <div class="box" style="padding:10px">
+        <strong>Dodaj plik:</strong>
+        <%= form_tag cmdb_ci_attachments_path(ci_id: @ci.id), multipart: true, style: 'margin-top:6px' do %>
+          <p><label>Plik:<br/><input type="file" name="file" style="width:100%"></label></p>
+          <p><label>Krótki opis:<br/><input type="text" name="description" maxlength="512" style="width:100%"></label></p>
+          <p><%= submit_tag 'Dodaj plik', class: 'button button-positive' %></p>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+</div>

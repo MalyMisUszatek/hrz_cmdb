@@ -41,17 +41,16 @@
           <label style="display:block;font-weight:normal">
             <input type="checkbox" class="rel-type-cb" value="<%= rt %>"
               <%= 'checked' if Array(@rel_types).include?(rt) %>>
-            <%= rt %>
+            <%= I18n.t("hrz_cmdb.ci_relations.types.#{rt}", default: rt) %>
           </label>
         <% end %>
       </p>
 
       <p>
-        <label><b>Głębokość (max <%= @max_depth %>)</b></label><br/>
-        <input type="range" id="rel-depth" min="1" max="10"
+        <label><b>Głębokość (max <span id="rel-depth-val"><%= @max_depth %></span>)</b></label><br/>
+        <input type="range" id="rel-depth" min="1" max="15"
                value="<%= @max_depth %>" style="width:100%"
                oninput="document.getElementById('rel-depth-val').textContent=this.value">
-        <span id="rel-depth-val"><%= @max_depth %></span>
       </p>
 
       <p>
@@ -61,11 +60,24 @@
       </p>
     </div>
 
+    <!-- Akcje na drzewie (widoczne po załadowaniu) -->
+    <div id="cmdb-tree-actions" class="box" style="padding:10px;margin-top:8px;display:none">
+      <b>Akcje:</b><br/>
+      <a href="#" class="button" style="display:block;margin:4px 0;text-align:center"
+         onclick="cmdbRestoreAll();return false;">
+        ↺ Przywróć wszystkie
+      </a>
+      <a href="#" class="button" style="display:block;margin:4px 0;text-align:center"
+         onclick="cmdbExportCsv();return false;">
+        ⬇ Eksportuj widoczne (CSV)
+      </a>
+    </div>
+
     <!-- legenda -->
     <div class="box" style="padding:10px;margin-top:8px;font-size:11px">
       <b>Legenda relacji:</b><br/>
       <% HrzcmCiRelation::RELATION_TYPES.each do |rt| %>
-        <span class="cmdb-rel-pill cmdb-rel-<%= rt.gsub('_','-') %>"><%= rt %></span><br/>
+        <span class="cmdb-rel-pill cmdb-rel-<%= rt.gsub('_','-') %>"><%= I18n.t("hrz_cmdb.ci_relations.types.#{rt}", default: rt) %></span><br/>
       <% end %>
     </div>
   </div>
@@ -84,19 +96,28 @@
         ← Wybierz CI i kliknij <b>Pokaż mapę</b>
       </div>
     <% end %>
-    <div id="cmdb-rel-loading" style="display:none;padding:20px;color:#888">
-      Ładowanie...
-    </div>
   </div>
 
 </div>
 
 <script>
 var cmdbRelTreeUrl = '<%= cmdb_relations_tree_data_path %>';
+var cmdbRelI18n = {
+  <% HrzcmCiRelation::RELATION_TYPES.each do |rt| %>
+  "<%= rt %>": "<%= j I18n.t("hrz_cmdb.ci_relations.types.#{rt}", default: rt) %>",
+  <% end %>
+};
 
+var cmdbCurrentCiName = '';
+var cmdbTreeData = null;
+
+// ── Ładowanie drzewa ───────────────────────────────────────────────────────
 function cmdbRelLoad() {
-  var ciId = document.getElementById('rel-ci-select').value;
+  var ciSel = document.getElementById('rel-ci-select');
+  var ciId  = ciSel.value;
   if (!ciId) { alert('Wybierz CI startowe'); return; }
+  cmdbCurrentCiName = ciSel.options[ciSel.selectedIndex].text.trim().split(' (')[0];
+
   var dir   = document.getElementById('rel-direction').value;
   var depth = document.getElementById('rel-depth').value;
   var types = Array.from(document.querySelectorAll('.rel-type-cb:checked')).map(function(cb){return cb.value;});
@@ -104,6 +125,7 @@ function cmdbRelLoad() {
 
   document.getElementById('cmdb-rel-tree-panel').innerHTML =
     '<div style="padding:20px;color:#888">Ładowanie...</div>';
+  document.getElementById('cmdb-tree-actions').style.display = 'none';
 
   var params = new URLSearchParams();
   params.append('ci_id', ciId);
@@ -117,8 +139,10 @@ function cmdbRelLoad() {
   })
   .then(function(r){ return r.json(); })
   .then(function(data) {
+    cmdbTreeData = data;
     document.getElementById('cmdb-rel-tree-panel').innerHTML =
       '<div id="cmdb-rel-tree">' + cmdbRenderNode(data, 0) + '</div>';
+    document.getElementById('cmdb-tree-actions').style.display = 'block';
   })
   .catch(function(e){
     document.getElementById('cmdb-rel-tree-panel').innerHTML =
@@ -126,22 +150,38 @@ function cmdbRelLoad() {
   });
 }
 
+// ── Renderowanie węzła ─────────────────────────────────────────────────────
 function cmdbRenderNode(node, depth) {
-  var indent = depth * 28;
+  var indent   = depth * 28;
   var relBadge = node.via
     ? '<span class="cmdb-rel-pill cmdb-rel-' + node.via.replace(/_/g,'-') + '">'
-      + (node.direction_in ? '↑ ' : '↓ ') + node.via + '</span> '
+      + (node.direction_in ? '↑ ' : '↓ ') + (cmdbRelI18n[node.via] || node.via) + '</span> '
     : '';
-  var cls = node.ci_class ? ' <em style="color:#888;font-size:11px">(' + cmdbEsc(node.ci_class) + ')</em>' : '';
-  var st  = node.status   ? ' <span class="cmdb-status-badge">' + cmdbEsc(node.status) + '</span>' : '';
-  var toggle = node.children && node.children.length
+  var cls = node.ci_class
+    ? ' <em style="color:#888;font-size:11px">(' + cmdbEsc(node.ci_class) + ')</em>' : '';
+  var st = node.status
+    ? ' <span class="cmdb-status-badge">' + cmdbEsc(node.status) + '</span>' : '';
+  var toggle = (node.children && node.children.length)
     ? '<a href="#" class="cmdb-toggle" onclick="cmdbToggle(this);return false;">▼</a> '
     : '<span style="display:inline-block;width:16px"></span> ';
 
-  var html = '<div class="cmdb-tree-node" style="margin-left:' + indent + 'px">'
+  // Przycisk ukrywania (nie dla korzenia depth==0)
+  var hideBtn = depth > 0
+    ? ' <a href="#" class="cmdb-hide-node" title="Ukryj tę gałąź"'
+      + ' onclick="cmdbHideNode(this);return false;">✕</a>'
+    : '';
+
+  var html = '<div class="cmdb-tree-node" data-depth="' + depth + '"'
+    + ' data-name="' + cmdbEsc(node.name) + '"'
+    + ' data-class="' + cmdbEsc(node.ci_class || '') + '"'
+    + ' data-status="' + cmdbEsc(node.status || '') + '"'
+    + ' data-via="' + cmdbEsc(node.via || '') + '"'
+    + ' data-dir="' + (node.direction_in ? 'in' : node.via ? 'out' : '') + '"'
+    + ' style="margin-left:' + indent + 'px">'
     + toggle + relBadge
     + '<span class="cmdb-node-name">' + cmdbEsc(node.name) + '</span>'
-    + cls + st + '</div>';
+    + cls + st + hideBtn
+    + '</div>';
 
   if (node.children && node.children.length) {
     html += '<div class="cmdb-tree-children">';
@@ -151,12 +191,13 @@ function cmdbRenderNode(node, depth) {
   return html;
 }
 
+// ── Helpers ────────────────────────────────────────────────────────────────
 function cmdbEsc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function cmdbToggle(a) {
-  var node = a.closest('.cmdb-tree-node');
+  var node     = a.closest('.cmdb-tree-node');
   var children = node.nextElementSibling;
   if (children && children.classList.contains('cmdb-tree-children')) {
     var hidden = children.style.display === 'none';
@@ -164,4 +205,78 @@ function cmdbToggle(a) {
     a.textContent = hidden ? '▼' : '►';
   }
 }
+
+// ── Ukrywanie gałęzi ───────────────────────────────────────────────────────
+function cmdbHideNode(btn) {
+  var nodeDiv  = btn.closest('.cmdb-tree-node');
+  var children = nodeDiv.nextElementSibling;
+  // Ukryj węzeł
+  nodeDiv.style.display = 'none';
+  // Ukryj dzieci (cała gałąź)
+  if (children && children.classList.contains('cmdb-tree-children')) {
+    children.style.display = 'none';
+  }
+}
+
+// ── Przywróć wszystkie ─────────────────────────────────────────────────────
+function cmdbRestoreAll() {
+  var tree = document.getElementById('cmdb-rel-tree');
+  if (!tree) return;
+  tree.querySelectorAll('.cmdb-tree-node, .cmdb-tree-children').forEach(function(el) {
+    el.style.display = '';
+  });
+  // Przywróć strzałki toggle
+  tree.querySelectorAll('.cmdb-toggle').forEach(function(a) {
+    a.textContent = '▼';
+  });
+}
+
+// ── Eksport CSV (tylko widoczne węzły) ─────────────────────────────────────
+function cmdbExportCsv() {
+  var tree = document.getElementById('cmdb-rel-tree');
+  if (!tree) { alert('Brak danych do eksportu'); return; }
+
+  var rows = [['CI nazwa', 'Klasa CI', 'Status', 'Typ relacji', 'Kierunek', 'Głębokość']];
+
+  tree.querySelectorAll('.cmdb-tree-node').forEach(function(el) {
+    // Pomiń ukryte węzły
+    if (el.style.display === 'none') return;
+    // Sprawdź czy rodzic nie jest ukryty
+    var p = el.parentElement;
+    while (p && p.id !== 'cmdb-rel-tree') {
+      if (p.style.display === 'none') return;
+      p = p.parentElement;
+    }
+    rows.push([
+      el.dataset.name    || '',
+      el.dataset.class   || '',
+      el.dataset.status  || '',
+      el.dataset.via     || '(korzeń)',
+      el.dataset.dir === 'in' ? 'incoming' : el.dataset.via ? 'outgoing' : '',
+      el.dataset.depth   || '0'
+    ]);
+  });
+
+  if (rows.length <= 1) { alert('Brak widocznych węzłów do eksportu'); return; }
+
+  var csv = rows.map(function(r) {
+    return r.map(function(c) {
+      var s = String(c).replace(/"/g, '""');
+      return /[",\n]/.test(s) ? '"' + s + '"' : s;
+    }).join(',');
+  }).join('\r\n');
+
+  var bom  = '\uFEFF'; // BOM dla polskich znaków w Excel
+  var blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  var date = new Date().toISOString().slice(0,10);
+  a.href     = url;
+  a.download = 'cmdb_relacje_' + cmdbCurrentCiName.replace(/[^a-zA-Z0-9_-]/g,'_') + '_' + date + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 </script>
+

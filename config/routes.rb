@@ -91,4 +91,11 @@ Rails.application.routes.draw do
   get  'cmdb_relations',           to: 'cmdb_relations#index',     as: 'cmdb_relations'
   get  'cmdb_relations/tree_data', to: 'cmdb_relations#tree_data', as: 'cmdb_relations_tree_data'
 
+  scope '/cmdb/ci/:ci_id', as: :cmdb_ci do
+    get    'history',                      to: 'cmdb_ci_history#index',              as: :history
+    post   'attachments',                  to: 'cmdb_ci_history#create_attachment',   as: :attachments
+    delete 'attachments/:att_id',          to: 'cmdb_ci_history#destroy_attachment',  as: :attachment
+    get    'attachments/:att_id/download', to: 'cmdb_ci_history#download_attachment', as: :attachment_download
+  end
+
 end

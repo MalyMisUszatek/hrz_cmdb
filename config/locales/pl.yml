@@ -290,6 +290,7 @@ pl:
         virtualizes: "Wirtualizuje"
         is_virtualized_by: "Jest wirtualizowane przez"
         backs_up: "Archiwizuje"
+        replaced_by: "Zastąpiony przez"
       replace:
         title: "Podmień CI (przenieś wszystkie relacje)"
         new_ci_label: "Nowe CI (zastępnik)"
@@ -304,6 +305,18 @@ pl:
         cannot_relate_to_self: "CI nie może być powiązane samo ze sobą"
         already_exists: "Taka relacja już istnieje"
 
+
+    history_and_docs: "Historia i dokumenty"
+    audit:
+      actions:
+        create:             "Utworzono"
+        update:             "Zmiana pola"
+        delete:             "Usunięto"
+        relation_added:     "Dodano relację"
+        relation_removed:   "Usunięto relację"
+        replaced:           "Podmieniono CI"
+        attachment_added:   "Dodano plik"
+        attachment_removed: "Usunięto plik"
     queries:
       title: "Zapytania CMDB"
       new: "Nowe zapytanie"

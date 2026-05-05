@@ -1,0 +1,8 @@
+﻿CI nazwa,Klasa CI,Status,Typ relacji,Kierunek,Głębokość
+Mobis,Apl. Kryt.,active,(korzeń),,0
+MsSQL,Database,active,connected_to,outgoing,1
+Intra2,VirtualneMaszyn,active,installed_on,outgoing,1
+W2K22,OS,active,contains,outgoing,2
+vmware7,OS,active,runs_on,outgoing,3
+Klatka BC-02,Serwery,active,installed_on,outgoing,4
+FUJITSU-01,Storage,active,connected_to,outgoing,5

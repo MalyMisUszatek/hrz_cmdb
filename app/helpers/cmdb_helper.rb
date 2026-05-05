@@ -82,7 +82,7 @@ module CmdbHelper
       safe_join(rels.map { |r|
         tgt = r.target_ci&.b_name_abbr || r.target_ci&.b_name_full || "CI##{r.target_ci_id}"
         content_tag(:span, class: 'cmdb-rel-badge') {
-          content_tag(:span, r.relation_type, class: 'cmdb-rel-type') +
+          content_tag(:span, I18n.t("hrz_cmdb.ci_relations.types.#{r.relation_type}", default: r.relation_type), class: 'cmdb-rel-type') +
           ' &rarr; '.html_safe +
           content_tag(:span, tgt, class: 'cmdb-rel-target')
         }
@@ -96,7 +96,7 @@ module CmdbHelper
         content_tag(:span, class: 'cmdb-rel-badge') {
           content_tag(:span, src, class: 'cmdb-rel-target') +
           ' &rarr; '.html_safe +
-          content_tag(:span, r.relation_type, class: 'cmdb-rel-type')
+          content_tag(:span, I18n.t("hrz_cmdb.ci_relations.types.#{r.relation_type}", default: r.relation_type), class: 'cmdb-rel-type')
         }
       }, ' '.html_safe)
     when 'j_ci_class_id'    then HrzcmCiClass.find_by(id: record.try(:j_ci_class_id))&.b_name_full.to_s
