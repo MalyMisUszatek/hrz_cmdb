@@ -23,7 +23,7 @@ Redmine::Plugin.register :hrz_cmdb do
   author 'Franz Apeltauer'
   description 'Configuration Management Database (CMDB) plugin for Redmine'
   version '0.8.4'
-  url 'https://github.com/franz-ap/hrz_cmdb'
+  url 'https://github.com/MalyMisUszatek/hrz_cmdb'
   author_url ''
   requires_redmine version_or_higher: '6.1.0'
 

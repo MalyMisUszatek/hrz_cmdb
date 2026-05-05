@@ -21,3 +21,7 @@ backup_*/
 *.bak*
 *.bak_*
 files/*.csv
+# Data exports
+files/*.csv
+# Data exports
+files/*.csv
