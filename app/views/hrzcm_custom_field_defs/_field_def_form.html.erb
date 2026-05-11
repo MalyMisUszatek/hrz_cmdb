@@ -1,0 +1,72 @@
+<%# Locals: ci_class, field_def, action_url, method %>
+<%= form_tag action_url, method: method,
+             style: 'display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end;' do %>
+
+  <div style="display:flex; flex-direction:column; min-width:160px;">
+    <label style="font-size:0.82em; color:#555;">Name / Nazwa *</label>
+    <%= text_field_tag 'field_def[b_name]', field_def.b_name,
+          placeholder: 'e.g. License Type',
+          style: 'width:100%;', required: true, maxlength: 120 %>
+  </div>
+
+  <div style="display:flex; flex-direction:column; min-width:120px;">
+    <label style="font-size:0.82em; color:#555;">Key (a-z_) *</label>
+    <%= text_field_tag 'field_def[b_key]', field_def.b_key,
+          placeholder: 'e.g. license_type',
+          style: 'width:100%;', required: true, maxlength: 60,
+          pattern: '[a-z0-9_]+' %>
+  </div>
+
+  <div style="display:flex; flex-direction:column; min-width:100px;">
+    <label style="font-size:0.82em; color:#555;">Type / Typ *</label>
+    <% wrapper_id = field_def.new_record? ? 'list-values-wrapper-new' : "list-values-wrapper-\#{field_def.id}" %>
+    <%= select_tag 'field_def[field_type]',
+          options_for_select(
+            HrzcmCiCustomFieldDef::FIELD_TYPES.map { |t|
+              [I18n.t("hrz_cmdb.custom_fields.types.#{t}", default: t.capitalize), t]
+            },
+            field_def.field_type
+          ),
+          style: 'width:100%;',
+          data: { target: wrapper_id },
+          onchange: "HrzCmdb.toggleListValues(this)" %>
+  </div>
+
+  <div style="display:flex; flex-direction:column; min-width:80px;">
+    <label style="font-size:0.82em; color:#555;">Required</label>
+    <label style="margin-top:6px;">
+      <%= check_box_tag 'field_def[is_required]', '1', field_def.is_required %>
+      required
+    </label>
+  </div>
+
+  <div style="display:flex; flex-direction:column; min-width:120px;">
+    <label style="font-size:0.82em; color:#555;">Default value</label>
+    <%= text_field_tag 'field_def[default_value]', field_def.default_value,
+          placeholder: 'optional', style: 'width:100%;', maxlength: 500 %>
+  </div>
+
+  <%# List values — shown only when type=list %>
+  <div id="list-values-wrapper-<%= field_def.id || 'new' %>"
+       style="display:<%= field_def.field_type == 'list' ? 'flex' : 'none' %>;
+              flex-direction:column; min-width:160px;">
+    <label style="font-size:0.82em; color:#555;">
+      List options (one per line / jedna na linię)
+    </label>
+    <%= text_area_tag 'field_def[list_values]',
+          field_def.list_options.join("\n"),
+          rows: 3, style: 'width:100%; font-size:0.85em;',
+          placeholder: "OEM\nOpen\nFreeware" %>
+  </div>
+
+  <div style="display:flex; align-items:flex-end;">
+    <%= submit_tag(field_def.new_record? ? 'Add / Dodaj' : 'Save / Zapisz',
+          class: 'button-positive', style: 'margin-bottom:2px;') %>
+    <% unless field_def.new_record? %>
+      &nbsp;
+      <a href="#" onclick="HrzCmdb.toggleEditFieldDef(<%= field_def.id %>); return false;"
+         style="margin-bottom:4px;">Cancel</a>
+    <% end %>
+  </div>
+
+<% end %>

@@ -20,6 +20,9 @@ class HrzcmCiClass < ActiveRecord::Base
   self.table_name = 'hrzcm_ci_class'
 
   # Associations
+  has_many :custom_field_defs, class_name: 'HrzcmCiCustomFieldDef',
+           foreign_key: 'j_ci_class_id', dependent: :destroy
+
   belongs_to :parent_class, class_name: 'HrzcmCiClass', foreign_key: 'j_subclass_of_id', optional: true
   has_many :subclasses, class_name: 'HrzcmCiClass', foreign_key: 'j_subclass_of_id', dependent: :restrict_with_error
   belongs_to :creator, class_name: 'User', foreign_key: 'created_by', optional: true

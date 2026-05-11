@@ -23,6 +23,29 @@ class HrzcmCi < ActiveRecord::Base
   belongs_to :ci_class, class_name: 'HrzcmCiClass', foreign_key: 'j_ci_class_id', optional: true
   belongs_to :location, class_name: 'HrzcmLocation', foreign_key: 'j_location_id', optional: true
   belongs_to :lifecycle_status, class_name: 'HrzcmLifecycleStatus', foreign_key: 'j_status_id', optional: true
+  has_many :custom_field_values, class_name: 'HrzcmCiCustomFieldValue',
+           foreign_key: 'j_ci_id', dependent: :destroy
+
+  # Returns hash { field_def => value_object_or_nil } for all fields of this CI's class
+  def custom_fields_with_values
+    return {} unless ci_class
+    ci_class.custom_field_defs.index_with do |fd|
+      custom_field_values.find { |v| v.j_field_def_id == fd.id }
+    end
+  end
+
+  # Build missing value objects (for new CI or newly added field defs)
+  def prepare_custom_field_values
+    return unless ci_class
+    existing_ids = custom_field_values.map(&:j_field_def_id)
+    ci_class.custom_field_defs.each do |fd|
+      unless existing_ids.include?(fd.id)
+        custom_field_values.build(j_field_def_id: fd.id,
+                                   value: fd.default_value)
+      end
+    end
+  end
+
   belongs_to :creator, class_name: 'User', foreign_key: 'created_by', optional: true
   belongs_to :updater, class_name: 'User', foreign_key: 'updated_by', optional: true
 

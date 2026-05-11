@@ -22,7 +22,7 @@ Redmine::Plugin.register :hrz_cmdb do
   name 'CMDB AF'
   author 'Franz Apeltauer'
   description 'Configuration Management Database (CMDB) plugin for Redmine'
-  version '0.8.4'
+  version '0.8.5'
   url 'https://github.com/MalyMisUszatek/hrz_cmdb'
   author_url ''
   requires_redmine version_or_higher: '6.1.0'
@@ -36,6 +36,7 @@ Redmine::Plugin.register :hrz_cmdb do
          HrzCmdb::PermissionHelper.user_has_permission?(User.current, 'edit_cmdb') ||
          HrzCmdb::PermissionHelper.user_has_permission?(User.current, 'edit_basic_data')
        }
+
 
   # Settings - Group-based permissions and configuration
   settings default: {

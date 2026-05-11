@@ -107,7 +107,15 @@
       </div>
 
       <div class="form-group">
-        <%= label_tag :b_url_doc, l('hrz_cmdb.fields.b_url_doc') %>
+  
+      <%# ---- Custom Fields — after Comment ---- %>
+      <%= render partial: 'cmdb/ci_custom_fields_form',
+                 locals: { ci: ci, ci_class_id: ci.j_ci_class_id } %>
+
+      </div>
+
+      <div class="form-group">
+      <%= label_tag :b_url_doc, l('hrz_cmdb.fields.b_url_doc') %>
         <div class="field-wrapper">
           <div class="url-field-container">
             <%= text_field_tag 'ci[b_url_doc]', ci.b_url_doc, class: 'form-control url-field', maxlength: 1500 %>

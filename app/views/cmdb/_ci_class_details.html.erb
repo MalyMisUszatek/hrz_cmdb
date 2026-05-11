@@ -120,4 +120,10 @@
       </div>
     <% end %>
   <% end %>
+<%# ---- Custom Field Definitions section ---- %>
+<% if ci_class.persisted? %>
+  <%= render partial: 'hrzcm_custom_field_defs/field_defs_section',
+             locals: { ci_class: ci_class, can_edit: can_edit } %>
+<% end %>
+
 </div>

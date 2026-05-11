@@ -1,0 +1,108 @@
+<%# Renders custom field definitions management section inside CiClass details/form %>
+<%# Locals: ci_class [HrzcmCiClass], can_edit [Boolean] %>
+
+<div class="custom-fields-section" id="custom-fields-<%= ci_class.id %>"
+     style="margin-top:1.2em; border-top:1px solid #e0e0e0; padding-top:0.8em;">
+  <h4 style="margin-bottom:0.5em;">
+    🔧 Custom Fields / Pola niestandardowe
+    <span style="font-size:0.8em; font-weight:normal; color:#666;">
+      (<%= ci_class.custom_field_defs.count %>)
+    </span>
+  </h4>
+
+  <%# --- Lista istniejących pól --- %>
+  <% if ci_class.custom_field_defs.any? %>
+    <table style="width:100%; border-collapse:collapse; font-size:0.88em; margin-bottom:0.8em;">
+      <thead>
+        <tr style="background:#f5f5f5; border-bottom:1px solid #ddd;">
+          <th style="padding:4px 8px; text-align:left;">Name / Nazwa</th>
+          <th style="padding:4px 8px;">Key</th>
+          <th style="padding:4px 8px;">Type / Typ</th>
+          <th style="padding:4px 8px;">Required</th>
+          <th style="padding:4px 8px;">Default</th>
+          <% if can_edit %><th style="padding:4px 8px;">Actions</th><% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% ci_class.custom_field_defs.each do |fd| %>
+          <tr style="border-bottom:1px solid #eee;">
+            <td style="padding:4px 8px; font-weight:bold;"><%= fd.b_name %></td>
+            <td style="padding:4px 8px; font-family:monospace; font-size:0.9em;"><%= fd.b_key %></td>
+            <td style="padding:4px 8px;">
+              <span style="background:#e8f0fe; padding:2px 6px; border-radius:3px; font-size:0.85em;">
+                <%= fd.field_type_label %>
+              </span>
+              <% if fd.field_type == 'list' %>
+                <span style="font-size:0.8em; color:#666;">
+                  [<%= fd.list_options.join(', ') %>]
+                </span>
+              <% end %>
+            </td>
+            <td style="padding:4px 8px; text-align:center;">
+              <%= fd.is_required ? '✓' : '' %>
+            </td>
+            <td style="padding:4px 8px; color:#666; font-size:0.88em;">
+              <%= fd.default_value %>
+            </td>
+            <% if can_edit %>
+              <td style="padding:4px 8px; white-space:nowrap;">
+                <%= link_to '✏️',
+                      '#',
+                      onclick: "HrzCmdb.toggleEditFieldDef(#{fd.id}); return false;",
+                      title: 'Edit / Edytuj' %>
+                <%= link_to '↑',
+                      ci_class_custom_fields_move_path(ci_class_id: ci_class.id, id: fd.id),
+                      method: :post, params: { direction: 'up' },
+                      title: 'Move up' %>
+                <%= link_to '↓',
+                      ci_class_custom_fields_move_path(ci_class_id: ci_class.id, id: fd.id),
+                      method: :post, params: { direction: 'down' },
+                      title: 'Move down' %>
+                <%= link_to '🗑',
+                      ci_class_custom_fields_destroy_path(ci_class_id: ci_class.id, id: fd.id),
+                      method: :delete,
+                      data: { confirm: "Delete field '#{fd.b_name}' and ALL its values?" },
+                      title: 'Delete / Usuń',
+                      style: 'color:#c00;' %>
+              </td>
+            <% end %>
+          </tr>
+          <%# Inline edit form (hidden) %>
+          <% if can_edit %>
+            <tr id="edit-field-def-<%= fd.id %>" style="display:none; background:#fffbf0;">
+              <td colspan="6" style="padding:8px;">
+                <%= render partial: 'hrzcm_custom_field_defs/field_def_form',
+                           locals: { ci_class: ci_class, field_def: fd,
+                                     action_url: ci_class_custom_fields_update_path(
+                                       ci_class_id: ci_class.id, id: fd.id),
+                                     method: :patch } %>
+              </td>
+            </tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p style="color:#888; font-size:0.9em; margin-bottom:0.8em;">
+      No custom fields defined yet. / Brak zdefiniowanych pól niestandardowych.
+    </p>
+  <% end %>
+
+  <%# --- Formularz nowego pola --- %>
+  <% if can_edit %>
+    <details id="new-field-def-<%= ci_class.id %>">
+      <summary style="cursor:pointer; font-size:0.9em; color:#3c5a99; font-weight:bold;">
+        ➕ Add new field / Dodaj nowe pole
+      </summary>
+      <div style="padding:8px; background:#f9f9f9; border:1px solid #e0e0e0;
+                  border-radius:4px; margin-top:6px;">
+        <%= render partial: 'hrzcm_custom_field_defs/field_def_form',
+                   locals: { ci_class: ci_class,
+                              field_def: HrzcmCiCustomFieldDef.new,
+                              action_url: ci_class_custom_fields_create_path(
+                                ci_class_id: ci_class.id),
+                              method: :post } %>
+      </div>
+    </details>
+  <% end %>
+</div>

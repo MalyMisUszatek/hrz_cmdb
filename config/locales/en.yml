@@ -294,6 +294,18 @@ en:
         cannot_relate_to_self: "CI cannot be related to itself"
         already_exists: "This relation already exists"
   # Issue CI Integration
+    custom_fields:
+      types:
+        text: "Text"
+        integer: "Integer"
+        float: "Decimal"
+        date: "Date"
+        bool: "Checkbox"
+        list: "List"
+      section_title: "Custom Fields"
+      no_fields: "No custom fields defined yet."
+      add_field: "Add new field"
+
   label_configuration_items: "Configuration Items"
   label_configuration_item: "Configuration Item"
   label_add_ci: "Add CI"

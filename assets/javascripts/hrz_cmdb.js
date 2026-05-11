@@ -878,3 +878,48 @@ HrzCmdb.replaceCI = function(ciId) {
   });
   return false;
 };
+
+// ---- Dynamic CF loading on CI class change (2026-05-11) ----
+HrzCmdb.loadCiCustomFields = function(ciClassId, ciId) {
+  var section = document.querySelector('.custom-fields-ci-section');
+  if (!section) return;
+  var url = '/cmdb/ci_custom_fields_partial?ci_class_id=' + ciClassId;
+  if (ciId) url += '&ci_id=' + ciId;
+  fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function(r) { return r.text(); })
+    .then(function(html) { section.outerHTML = html; })
+    .catch(function(e) { console.log('CF load error:', e); });
+};
+// ---- end dynamic CF ----
+
+// ---- toggleListValues (2026-05-11) ----
+HrzCmdb.toggleListValues = function(selectEl) {
+  var targetId = selectEl.getAttribute('data-target');
+  var wrapper = targetId ? document.getElementById(targetId) : null;
+  if (!wrapper) {
+    var form = selectEl.closest('form');
+    if (form) wrapper = form.querySelector('[id^="list-values-wrapper-"]');
+  }
+  if (wrapper) {
+    wrapper.style.display = selectEl.value === 'list' ? 'flex' : 'none';
+  }
+};
+// ---- end toggleListValues ----
+
+// ---- toggleEditFieldDef (2026-05-11) ----
+HrzCmdb.toggleEditFieldDef = function(fieldDefId) {
+  var row = document.getElementById('edit-field-def-' + fieldDefId);
+  if (!row) return;
+  var isHidden = row.style.display === 'none' || row.style.display === '';
+  // Ukryj wszystkie inne otwarte formularze edycji
+  document.querySelectorAll('tr[id^="edit-field-def-"]').forEach(function(r) {
+    r.style.display = 'none';
+  });
+  // Pokaż lub ukryj kliknięty
+  if (isHidden) {
+    row.style.display = 'table-row';
+    var firstInput = row.querySelector('input[type="text"], input[type="number"], select');
+    if (firstInput) firstInput.focus();
+  }
+};
+// ---- end toggleEditFieldDef ----

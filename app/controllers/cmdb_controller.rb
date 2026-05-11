@@ -514,6 +514,7 @@ end
     @ci = HrzcmCi.new(ci_params)
 
     if @ci.save
+      save_ci_custom_field_values(@ci)
       render json: {
         success: true,
         id: @ci.id,
@@ -530,6 +531,7 @@ end
   # Returns: JSON with success status and updated CI ID, or error messages
   def update_ci
     if @ci.update(ci_params)
+      save_ci_custom_field_values(@ci)
       render json: {
         success: true,
         id: @ci.id,
@@ -960,4 +962,29 @@ end
   def can_edit_basic_data?
     HrzCmdb::PermissionHelper.user_has_permission?(User.current, 'edit_basic_data')
   end
+  # Saves custom field values from params[:cf] = { field_def_id => value }
+  def save_ci_custom_field_values(ci)
+    return unless params[:cf].is_a?(ActionController::Parameters) || params[:cf].is_a?(Hash)
+    params[:cf].each do |field_def_id, value|
+      fd = HrzcmCiCustomFieldDef.find_by(id: field_def_id.to_i,
+                                          j_ci_class_id: ci.j_ci_class_id)
+      next unless fd
+      cfv = HrzcmCiCustomFieldValue.find_or_initialize_by(
+        j_ci_id: ci.id,
+        j_field_def_id: fd.id
+      )
+      cfv.value = value.to_s
+      cfv.save
+    end
+  end
+
+  def ci_custom_fields_partial
+    ci_class_id = params[:ci_class_id].to_i
+    ci_id       = params[:ci_id].to_i
+    @ci         = ci_id > 0 ? HrzcmCi.includes(:custom_field_values).find_by(id: ci_id) : HrzcmCi.new
+    @ci_class   = HrzcmCiClass.find_by(id: ci_class_id)
+    render partial: 'cmdb/ci_custom_fields_form',
+           locals: { ci: @ci, ci_class_id: ci_class_id }
+  end
+
 end

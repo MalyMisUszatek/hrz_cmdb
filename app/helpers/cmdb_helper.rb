@@ -111,4 +111,36 @@ module CmdbHelper
       record.try(column).to_s
     end
   end
+
+  # Checks if an entity type is visible for current user in given context
+  # @param entity_type [String] e.g. 'ci'
+  # @param context     [String] 'list' or 'detail'
+  def entity_visible?(entity_type, context: 'both')
+    HrzcmVisibilityRule.visible?(User.current, entity_type, context: context)
+  end
+
+  # Checks if a specific field is visible for current user
+  # @param entity_type [String]
+  # @param field_name  [String]
+  # @param context     [String] 'list' or 'detail'
+  def field_visible?(entity_type, field_name, context: 'both')
+    HrzcmVisibilityRule.visible?(User.current, entity_type,
+                                  field_name: field_name, context: context)
+  end
+
+  # Returns hash of field => visible? for an entity type
+  def visible_fields_map(entity_type, context: 'both')
+    HrzcmVisibilityRule.fields_map(User.current, entity_type, context: context)
+  end
+
+
+  # Returns current visibility for admin panel checkbox
+  def current_rule(global_rules, rules_by_group, group, entity_type, field_name, apply_to)
+    fn = field_name.nil? ? '_entity_' : field_name
+    key = "#{group&.id}|#{entity_type}|#{fn}|#{apply_to}"
+    src = group ? rules_by_group[group] : global_rules
+    rule = src&.dig(key)
+    rule ? rule.visible : true  # domyślnie widoczne
+  end
+
 end

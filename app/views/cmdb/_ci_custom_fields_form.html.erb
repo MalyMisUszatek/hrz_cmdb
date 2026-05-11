@@ -1,0 +1,51 @@
+<%# Renders custom field inputs for CI form
+    Locals: ci [HrzcmCi], ci_class_id [Integer, nil] %>
+<% ci_class_id_val = ci_class_id || ci&.j_ci_class_id %>
+<% ci_class = ci_class_id_val.present? ? HrzcmCiClass.find_by(id: ci_class_id_val) : nil %>
+<% field_defs = ci_class&.custom_field_defs || [] %>
+<% return if field_defs.empty? %>
+
+<div class="custom-fields-ci-section"
+     style="border-top:1px solid #e0e0e0; margin-top:0.8em; padding-top:0.8em;">
+  <h4 style="margin-bottom:0.8em; font-size:0.95em; color:#333;">
+    🔧 <%= l('hrz_cmdb.custom_fields.section_title') %>
+  </h4>
+  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:0.6em 1.2em;">
+    <% field_defs.each do |fd| %>
+      <% existing = ci&.custom_field_values&.find { |v| v.j_field_def_id == fd.id } %>
+      <% current_val = existing&.value || fd.default_value %>
+      <div class="form-group" style="margin-bottom:0;">
+        <label style="font-size:0.88em;">
+          <%= fd.b_name %>
+          <% if fd.is_required %><span class="required">*</span><% end %>
+        </label>
+        <div class="field-wrapper">
+          <% case fd.field_type %>
+          <% when 'text' %>
+            <%= text_field_tag "cf[#{fd.id}]", current_val,
+                  class: 'form-control', maxlength: 500 %>
+          <% when 'integer' %>
+            <%= number_field_tag "cf[#{fd.id}]", current_val,
+                  class: 'form-control form-control-short', step: 1 %>
+          <% when 'float' %>
+            <%= number_field_tag "cf[#{fd.id}]", current_val,
+                  class: 'form-control form-control-short', step: 'any' %>
+          <% when 'date' %>
+            <%= date_field_tag "cf[#{fd.id}]", current_val,
+                  class: 'form-control form-control-short' %>
+          <% when 'bool' %>
+            <%= check_box_tag "cf[#{fd.id}]", '1', current_val == '1',
+                  style: 'margin-top:6px;' %>
+          <% when 'list' %>
+            <%= select_tag "cf[#{fd.id}]",
+                  options_for_select(
+                    [['— select / wybierz —', '']] + fd.list_options.map { |o| [o, o] },
+                    current_val
+                  ),
+                  class: 'form-control' %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

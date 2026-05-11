@@ -98,4 +98,16 @@ Rails.application.routes.draw do
     get    'attachments/:att_id/download', to: 'cmdb_ci_history#download_attachment', as: :attachment_download
   end
 
+
+  # Custom field definitions (nested under ci_class)
+  scope '/cmdb/ci_class/:ci_class_id/custom_fields', as: :ci_class_custom_fields do
+    post   '/',        to: 'hrzcm_custom_field_defs#create',  as: :create
+    patch  '/:id',     to: 'hrzcm_custom_field_defs#update',  as: :update
+    delete '/:id',     to: 'hrzcm_custom_field_defs#destroy', as: :destroy
+    post   '/:id/move',to: 'hrzcm_custom_field_defs#move',    as: :move
+  end
+
+
+  get '/cmdb/ci_custom_fields_partial', to: 'cmdb#ci_custom_fields_partial', as: :ci_custom_fields_partial
+
 end

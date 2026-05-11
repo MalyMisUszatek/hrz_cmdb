@@ -364,6 +364,18 @@ pl:
       updated_on: "Data modyfikacji"
     
   # Issue CI Integration
+    custom_fields:
+      types:
+        text: "Tekst"
+        integer: "Liczba całkowita"
+        float: "Liczba dziesiętna"
+        date: "Data"
+        bool: "Pole wyboru"
+        list: "Lista"
+      section_title: "Pola niestandardowe"
+      no_fields: "Brak zdefiniowanych pól niestandardowych."
+      add_field: "Dodaj nowe pole"
+
   label_configuration_items: "Elementy konfiguracji"
   label_configuration_item: "Element konfiguracji"
   label_add_ci: "Dodaj CI"
