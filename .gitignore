@@ -1,27 +1,21 @@
+# IDE / tools
 .claude
-Gemfile.lock
-_backup_*/
 
-# Backup files
-*.bak_*
+# Gems
+Gemfile.lock
+
+# Backup directories
 _backup_*/
 BACKUP_*/
-CONTEXT_*.md
-# Backup files
-_backup_*/
-*.bak*
-*.bak_*
-# Backup files
-_backup_*/
-*.bak*
-*.bak_*
-# Backup files
-_backup_*/
 backup_*/
-*.bak*
+
+# Backup files
+*.bak
 *.bak_*
-files/*.csv
-# Data exports
-files/*.csv
+
+# Context files (local session only)
+CONTEXT_*.md
+context_*.md
+
 # Data exports
 files/*.csv
