@@ -268,6 +268,7 @@ en:
         cannot_relate_to_self: CI cannot be related to itself
         already_exists: This relation already exists
     custom_fields:
+      inherited_from: "Inherited from: %{class_name}"
       section_title: Custom Fields
       title: Custom Fields
       no_fields_defined: No custom fields defined.

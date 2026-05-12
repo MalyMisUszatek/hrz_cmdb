@@ -73,6 +73,42 @@ class HrzcmCiClass < ActiveRecord::Base
     b_name_abbr || b_name_full
   end
 
+
+  # Returns custom field defs for this class + all ancestor classes (inherited).
+  # Each field_def is decorated with :inherited (bool) and :inherited_from (class name).
+  # Own fields first, then parent fields going up the hierarchy.
+  def inherited_custom_field_defs
+    result = []
+    seen_keys = {}
+    current = self
+
+    while current
+      current.custom_field_defs.each do |fd|
+        next if seen_keys[fd.b_key]  # own class overrides ancestor
+        seen_keys[fd.b_key] = true
+        is_inherited = (current.id != self.id)
+        from_name    = is_inherited ? current.b_name_abbr : nil
+        fd.define_singleton_method(:inherited)      { is_inherited }
+        fd.define_singleton_method(:inherited_from) { from_name }
+        result << fd
+      end
+      current = current.parent_class
+    end
+
+    result
+  end
+
+  # Returns ancestor class ids from self up to root (including self).
+  def ancestor_ids
+    ids = []
+    current = self
+    while current
+      ids << current.id
+      current = current.parent_class
+    end
+    ids
+  end
+
   private
 
   # Sets creator user ID and timestamp before record creation.

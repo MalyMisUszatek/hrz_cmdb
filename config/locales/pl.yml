@@ -321,6 +321,7 @@ pl:
       author: Autor
       results_count: 'Wyniki: %{count}'
     custom_fields:
+      inherited_from: "Dziedziczone z: %{class_name}"
       section_title: Pola niestandardowe
       title: Pola niestandardowe
       no_fields_defined: Brak zdefiniowanych pol.

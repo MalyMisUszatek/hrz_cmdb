@@ -9,7 +9,7 @@
     Locals: ci [HrzcmCi], ci_class_id [Integer, nil] %>
 <% ci_class_id_val = ci_class_id || ci&.j_ci_class_id %>
 <% ci_class = ci_class_id_val.present? ? HrzcmCiClass.find_by(id: ci_class_id_val) : nil %>
-<% field_defs = ci_class&.custom_field_defs || [] %>
+<% field_defs = ci_class&.inherited_custom_field_defs || [] %>
 <% return if field_defs.empty? %>
 
 <div class="custom-fields-ci-section"
@@ -19,12 +19,21 @@
   </h4>
   <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:0.6em 1.2em;">
     <% field_defs.each do |fd| %>
+    <% is_inherited = fd.respond_to?(:inherited) && fd.inherited %>
       <% existing = ci&.custom_field_values&.find { |v| v.j_field_def_id == fd.id } %>
       <% current_val = existing&.value || fd.default_value %>
       <div class="form-group" style="margin-bottom:0;">
         <label style="font-size:0.88em;">
           <%= fd.b_name %>
           <% if fd.is_required %><span class="required">*</span><% end %>
+          <% if is_inherited %>
+            <span title="<%= l('hrz_cmdb.custom_fields.inherited_from', class_name: fd.inherited_from.to_s) %>"
+                  style="display:inline-block; font-size:10px; font-weight:normal;
+                         background:#e8f0e8; color:#4a7a4a; border:1px solid #b0d0b0;
+                         border-radius:3px; padding:0 4px; margin-left:4px; vertical-align:middle;">
+              ↑ <%= fd.inherited_from %>
+            </span>
+          <% end %>
           <% if fd.bdescription.present? %>
             <span class="hrzcm-tip" style="position:relative; display:inline-block; margin-left:4px; vertical-align:middle;">
               <span style="display:inline-flex; align-items:center; justify-content:center;
