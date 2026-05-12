@@ -33,3 +33,21 @@ HrzCmdb.updateFieldVisibility = function(checkbox) {
   }
 };
 // ---- end field visibility ----
+
+// Tooltip hover dla .hrzcm-tooltip-wrap
+document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('mouseover', function(e) {
+    var wrap = e.target.closest('.hrzcm-tooltip-wrap');
+    if (wrap) {
+      var box = wrap.querySelector('.hrzcm-tooltip-box');
+      if (box) box.style.display = 'block';
+    }
+  });
+  document.addEventListener('mouseout', function(e) {
+    var wrap = e.target.closest('.hrzcm-tooltip-wrap');
+    if (wrap) {
+      var box = wrap.querySelector('.hrzcm-tooltip-box');
+      if (box) box.style.display = 'none';
+    }
+  });
+});

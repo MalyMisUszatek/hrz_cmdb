@@ -46,6 +46,15 @@
                          ),
                          class: 'form-control',
                          id: 'ci_j_ci_class_id',
+                         'data-ci-class-id': ci.j_ci_class_id,
+                         'data-visibility': HrzcmCiClass.all.each_with_object({}) { |cc, h|
+                           h[cc.id.to_s] = {
+                             p: cc.show_bproducer  ? 1 : 0,
+                             m: cc.show_bmodel     ? 1 : 0,
+                             t: cc.show_btagserial ? 1 : 0,
+                             u: cc.show_burldoc    ? 1 : 0
+                           }
+                         }.to_json,
                          required: true %>
         </div>
       </div>
@@ -64,21 +73,21 @@
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" id="field-b-producer">
         <%= label_tag :b_producer, l('hrz_cmdb.fields.b_producer') %>
         <div class="field-wrapper">
           <%= text_field_tag 'ci[b_producer]', ci.b_producer, class: 'form-control', maxlength: 100 %>
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" id="field-b-model">
         <%= label_tag :b_model, l('hrz_cmdb.fields.b_model') %>
         <div class="field-wrapper">
           <%= text_field_tag 'ci[b_model]', ci.b_model, class: 'form-control', maxlength: 100 %>
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" id="field-b-tag-serial">
         <%= label_tag :b_tag_serial, l('hrz_cmdb.fields.b_tag_serial') %>
         <div class="field-wrapper">
           <%= text_field_tag 'ci[b_tag_serial]', ci.b_tag_serial, class: 'form-control', maxlength: 40 %>
@@ -114,7 +123,7 @@
 
       </div>
 
-      <div class="form-group">
+      <div class="form-group" id="field-b-url-doc">
       <%= label_tag :b_url_doc, l('hrz_cmdb.fields.b_url_doc') %>
         <div class="field-wrapper">
           <div class="url-field-container">

@@ -26,7 +26,13 @@
       <tbody>
         <% ci_class.custom_field_defs.each do |fd| %>
           <tr style="border-bottom:1px solid #eee;">
-            <td style="padding:4px 8px; font-weight:bold;"><%= fd.b_name %></td>
+            <td style="padding:4px 8px; font-weight:bold;">
+              <%= fd.b_name %>
+              <% if fd.bdescription.present? %>
+                <span title="<%= fd.bdescription %>"
+                      style="cursor:help; color:#3c5a99; font-size:0.85em; margin-left:4px;">ℹ</span>
+              <% end %>
+            </td>
             <td style="padding:4px 8px; font-family:monospace; font-size:0.9em;"><%= fd.b_key %></td>
             <td style="padding:4px 8px;">
               <span style="background:#e8f0fe; padding:2px 6px; border-radius:3px; font-size:0.85em;">

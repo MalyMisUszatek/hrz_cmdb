@@ -99,9 +99,9 @@ class HrzcmCustomFieldDefsController < ApplicationController
       :default_value, :j_sort, :list_values, :bdescription
     )
     # list_values przychodzi jako textarea (jedna wartość na linię) -> JSON
-    if p[:list_values, :bdescription].present?
-      lines = p[:list_values, :bdescription].split(/\r?\n/).map(&:strip).reject(&:blank?)
-      p[:list_values, :bdescription] = lines.to_json
+    if p[:list_values].present?
+      lines = p[:list_values].split(/\r?\n/).map(&:strip).reject(&:blank?)
+      p[:list_values] = lines.to_json
     end
     p
   end

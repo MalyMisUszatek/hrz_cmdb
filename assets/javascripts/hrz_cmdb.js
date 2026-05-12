@@ -342,6 +342,7 @@ var HrzCmdb = {
         url: '/cmdb/ci/' + ciId,
         success: function(html) {
           detailsContainer.html(html);
+          HrzCmdb.applyCiVisibility();
         },
         error: function(xhr) {
           console.error('Failed to load CI details:', xhr);
@@ -923,3 +924,39 @@ HrzCmdb.toggleEditFieldDef = function(fieldDefId) {
   }
 };
 // ---- end toggleEditFieldDef ----
+
+// ---- applyCiVisibility (2026-05-12) ----
+HrzCmdb.applyCiVisibility = function() {
+  var sel = document.getElementById('ci_j_ci_class_id');
+  if (!sel) return;
+
+  var classId = String(sel.value);
+  var FIELD_MAP = {
+    p: 'field-b-producer',
+    m: 'field-b-model',
+    t: 'field-b-tag-serial',
+    u: 'field-b-url-doc'
+  };
+
+  function apply(classId) {
+    var raw = sel.getAttribute('data-visibility');
+    if (!raw) return;
+    var vis = {};
+    try { vis = JSON.parse(raw); } catch(e) { return; }
+    var data = vis[classId] || {};
+    Object.keys(FIELD_MAP).forEach(function(key) {
+      var el = document.getElementById(FIELD_MAP[key]);
+      if (!el) return;
+      el.style.display = (data[key] === 0) ? 'none' : '';
+    });
+  }
+
+  apply(classId);
+
+  // Reaguj na zmiane klasy
+  if (!sel._visibilityBound) {
+    sel._visibilityBound = true;
+    sel.addEventListener('change', function() { apply(String(this.value)); });
+  }
+};
+// ---- end applyCiVisibility ----

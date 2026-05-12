@@ -487,7 +487,7 @@ class CmdbController < ApplicationController
   # Returns: HTML partial or JSON representation
 
   def show_ci
-    @ci = HrzcmCi.find(params[:id])
+    @ci = HrzcmCi.includes(:custom_field_values).find(params[:id])
     @can_edit = can_edit?
 
     if request.xhr?
@@ -759,7 +759,7 @@ end
   # Sets: @ci instance variable
   # Raises: Renders 404 if CI not found
   def find_ci
-    @ci = HrzcmCi.find(params[:id])
+    @ci = HrzcmCi.includes(:custom_field_values).find(params[:id])
   rescue ActiveRecord::RecordNotFound
     render_404
   end

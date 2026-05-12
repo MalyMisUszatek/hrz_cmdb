@@ -115,6 +115,10 @@ pl:
       j_ci_class_id: Klasa CI
       j_location_id: Lokalizacja
       j_status_id: Status
+      j_ci_class: Klasa CI
+      j_location: Lokalizacja
+      j_status: Status cyklu życia
+      b_comment: Komentarz
       b_producer: Producent
       b_model: Model
       b_tag_serial: Nr seryjny / Tag

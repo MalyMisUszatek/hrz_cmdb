@@ -85,6 +85,29 @@
         </div>
       </div>
 
+
+      <%# ---- Field Visibility ---- %>
+      <fieldset style="border:1px solid #d7d7d7; border-radius:3px; padding:0.8em 1em; margin-top:0.8em;">
+        <legend style="font-weight:bold; font-size:0.9em; padding:0 4px;">
+          <%= l('hrz_cmdb.field_visibility.title') %>
+        </legend>
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap:0.4em 1.2em;">
+          <% [
+            [:show_bproducer,  l('hrz_cmdb.fields.b_producer')],
+            [:show_bmodel,     l('hrz_cmdb.fields.b_model')],
+            [:show_btagserial, l('hrz_cmdb.fields.b_tag_serial')],
+            [:show_burldoc,    l('hrz_cmdb.fields.b_url_doc', default: 'Documentation URL')]
+          ].each do |col, label| %>
+            <label style="font-weight:normal; display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <%= hidden_field_tag "ci_class[#{col}]", '0' %>
+              <%= check_box_tag "ci_class[#{col}]", '1',
+                    ci_class.respond_to?(col) ? ci_class.send(col) : true,
+                    style: 'margin:0;' %>
+              <%= label %>
+            </label>
+          <% end %>
+        </div>
+      </fieldset>
       <fieldset class="status-info">
         <legend><%= l('hrz_cmdb.status_info.title') %></legend>
         <div class="status-info-content">

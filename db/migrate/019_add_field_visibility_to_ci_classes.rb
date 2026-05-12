@@ -1,6 +1,6 @@
 class AddFieldVisibilityToCiClasses < ActiveRecord::Migration[7.2]
   # Sprawdź prawdziwą nazwę tabeli w bazie: bundle exec rails runner 'puts ActiveRecord::Base.connection.tables.grep(/ci/).sort.inspect'
-  TABLE = :hrzcm_ci_classes  # <-- zmień jeśli inna nazwa
+  TABLE = :hrzcm_ci_class  # <-- zmień jeśli inna nazwa
 
   def up
     return unless table_exists?(TABLE)
