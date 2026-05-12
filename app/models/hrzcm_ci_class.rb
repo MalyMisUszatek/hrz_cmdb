@@ -29,6 +29,10 @@ class HrzcmCiClass < ActiveRecord::Base
   belongs_to :updater, class_name: 'User', foreign_key: 'updated_by', optional: true
 
   # Validations
+
+  # Standard field visibility per CI class (default: true)
+  # Columns: show_bproducer, show_bmodel, show_btagserial, show_burldoc
+
   validates :b_name_full, length: { maximum: 120 }
   validates :b_name_abbr, length: { maximum: 15 }
   validates :b_comment, length: { maximum: 10000 }

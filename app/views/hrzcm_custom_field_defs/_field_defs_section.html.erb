@@ -4,7 +4,7 @@
 <div class="custom-fields-section" id="custom-fields-<%= ci_class.id %>"
      style="margin-top:1.2em; border-top:1px solid #e0e0e0; padding-top:0.8em;">
   <h4 style="margin-bottom:0.5em;">
-    🔧 Custom Fields / Pola niestandardowe
+    🔧 <%= l('hrz_cmdb.custom_fields.title', default: 'Custom Fields') %>
     <span style="font-size:0.8em; font-weight:normal; color:#666;">
       (<%= ci_class.custom_field_defs.count %>)
     </span>
@@ -15,12 +15,12 @@
     <table style="width:100%; border-collapse:collapse; font-size:0.88em; margin-bottom:0.8em;">
       <thead>
         <tr style="background:#f5f5f5; border-bottom:1px solid #ddd;">
-          <th style="padding:4px 8px; text-align:left;">Name / Nazwa</th>
-          <th style="padding:4px 8px;">Key</th>
-          <th style="padding:4px 8px;">Type / Typ</th>
-          <th style="padding:4px 8px;">Required</th>
-          <th style="padding:4px 8px;">Default</th>
-          <% if can_edit %><th style="padding:4px 8px;">Actions</th><% end %>
+          <th style="padding:4px 8px; text-align:left;"><%= l('hrz_cmdb.custom_fields.table_headers.name', default: 'Name') %></th>
+          <th style="padding:4px 8px;"><%= l('hrz_cmdb.custom_fields.table_headers.key', default: 'Key') %></th>
+          <th style="padding:4px 8px;"><%= l('hrz_cmdb.custom_fields.table_headers.type', default: 'Type') %></th>
+          <th style="padding:4px 8px;"><%= l('hrz_cmdb.custom_fields.table_headers.required', default: 'Required') %></th>
+          <th style="padding:4px 8px;"><%= l('hrz_cmdb.custom_fields.table_headers.default', default: 'Default') %></th>
+          <% if can_edit %><th style="padding:4px 8px;"><%= l('hrz_cmdb.custom_fields.table_headers.actions', default: 'Actions') %></th><% end %>
         </tr>
       </thead>
       <tbody>
@@ -92,7 +92,7 @@
   <% if can_edit %>
     <details id="new-field-def-<%= ci_class.id %>">
       <summary style="cursor:pointer; font-size:0.9em; color:#3c5a99; font-weight:bold;">
-        ➕ Add new field / Dodaj nowe pole
+        ➕ <%= l('hrz_cmdb.custom_fields.add_new_field', default: 'Add new field') %>
       </summary>
       <div style="padding:8px; background:#f9f9f9; border:1px solid #e0e0e0;
                   border-radius:4px; margin-top:6px;">

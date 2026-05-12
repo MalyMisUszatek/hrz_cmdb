@@ -27,6 +27,14 @@ class HrzcmCiCustomFieldValue < ActiveRecord::Base
     typed_value.to_s
   end
 
+  def fieldlabel
+    if fielddef.respond_to?(:bname) && fielddef.bname.present?
+      fielddef.bname
+    else
+      "CF\#{j_fielddef_id}"
+    end
+  end
+
   private
 
   def field_label
