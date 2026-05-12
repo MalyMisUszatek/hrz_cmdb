@@ -967,9 +967,10 @@ end
   def save_ci_custom_field_values(ci)
     return unless params[:cf].is_a?(ActionController::Parameters) || params[:cf].is_a?(Hash)
     params[:cf].each do |field_def_id, value|
-      fd = HrzcmCiCustomFieldDef.find_by(id: field_def_id.to_i,
-                                          j_ci_class_id: ci.j_ci_class_id)
-      next unless fd
+      fd_id = field_def_id.to_i
+      allowed_ids = ci.ci_class.inherited_custom_field_defs.map(&:id)
+      next unless allowed_ids.include?(fd_id)
+      fd = HrzcmCiCustomFieldDef.find(fd_id)
       cfv = HrzcmCiCustomFieldValue.find_or_initialize_by(
         j_ci_id: ci.id,
         j_field_def_id: fd.id

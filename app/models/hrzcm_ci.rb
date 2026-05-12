@@ -29,7 +29,7 @@ class HrzcmCi < ActiveRecord::Base
   # Returns hash { field_def => value_object_or_nil } for all fields of this CI's class
   def custom_fields_with_values
     return {} unless ci_class
-    ci_class.custom_field_defs.index_with do |fd|
+    ci_class.inherited_custom_field_defs.index_with do |fd|
       custom_field_values.find { |v| v.j_field_def_id == fd.id }
     end
   end
@@ -38,7 +38,7 @@ class HrzcmCi < ActiveRecord::Base
   def prepare_custom_field_values
     return unless ci_class
     existing_ids = custom_field_values.map(&:j_field_def_id)
-    ci_class.custom_field_defs.each do |fd|
+    ci_class.inherited_custom_field_defs.each do |fd|
       unless existing_ids.include?(fd.id)
         custom_field_values.build(j_field_def_id: fd.id,
                                    value: fd.default_value)
