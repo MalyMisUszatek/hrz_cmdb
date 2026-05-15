@@ -13,6 +13,7 @@ class HrzcmQuery < ActiveRecord::Base
 
   ENTITY_TYPES   = %w[ci location ci_class lifecycle_status].freeze
   RELATION_TYPES = %w[connected_to contains installed_on runs_on virtualizes].freeze
+  CF_PREFIX      = 'cf_'.freeze
 
   AVAILABLE_COLUMNS = {
     'ci' => [
@@ -61,6 +62,16 @@ class HrzcmQuery < ActiveRecord::Base
   DATE_FIELDS     = %w[created_on updated_on].freeze
   VIRTUAL_FIELDS  = %w[relations_out relations_in].freeze
   RELATION_FILTER = 'has_relation_type'.freeze
+
+  def self.cf_columns_for(ci_class_id = nil)
+    scope = HrzcmCiCustomFieldDef.all
+    scope = scope.where(j_ci_class_id: ci_class_id) if ci_class_id.present?
+    scope.map do |fd|
+      class_abbr = HrzcmCiClass.find_by(id: fd.j_ci_class_id)&.b_name_abbr
+      label = class_abbr ? "#{fd.b_name} (#{class_abbr})" : fd.b_name
+      ["#{CF_PREFIX}#{fd.b_key}", label, fd.j_ci_class_id, fd.id]
+    end
+  end
 
   def filters_data
     return [] if filters.blank?
@@ -134,6 +145,27 @@ class HrzcmQuery < ActiveRecord::Base
         next
       end
 
+      if field.start_with?(CF_PREFIX)
+        bkey = field.sub(CF_PREFIX, '')
+        fd   = HrzcmCiCustomFieldDef.find_by(b_key: bkey)
+        next unless fd
+        atbl = "cfv_#{bkey.gsub(/[^a-z0-9]/, '_')}"
+        scope = scope.joins(
+          "LEFT JOIN hrzcm_ci_custom_field_values #{atbl}
+           ON #{atbl}.j_ci_id = hrzcm_ci.id
+           AND #{atbl}.j_field_def_id = #{fd.id}"
+        )
+        case operator
+        when '='  then scope = scope.where("#{atbl}.value = ?", value)
+        when '!=' then scope = scope.where("#{atbl}.value != ? OR #{atbl}.value IS NULL", value)
+        when '~'  then scope = scope.where("#{atbl}.value LIKE ?", "%#{sanitize_like(value)}%")
+        when '!~' then scope = scope.where("#{atbl}.value NOT LIKE ? OR #{atbl}.value IS NULL", "%#{sanitize_like(value)}%")
+        when '*'  then scope = scope.where.not("#{atbl}.value": [nil, ''])
+        when '!*' then scope = scope.where("#{atbl}.value IS NULL OR #{atbl}.value = ''")
+        end
+        next
+      end
+
       next unless valid_field?(field)
 
       case operator
@@ -157,6 +189,7 @@ class HrzcmQuery < ActiveRecord::Base
   end
 
   def valid_field?(field)
+    return true if field.to_s.start_with?(CF_PREFIX)
     all = (AVAILABLE_COLUMNS[entity_type] || []).map(&:first) + VIRTUAL_FIELDS + [RELATION_FILTER]
     all.include?(field.to_s)
   end

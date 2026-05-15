@@ -85,6 +85,10 @@ Rails.application.routes.draw do
     member do
       get :results
     end
+    collection do
+      get  :cf_columns
+      post :preview
+    end
   end
 
   # Relations tree (add before the last 'end')

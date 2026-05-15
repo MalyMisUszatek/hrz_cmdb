@@ -152,6 +152,17 @@
              [[l('hrz_cmdb.queries.sort_asc'),'asc'],[l('hrz_cmdb.queries.sort_desc'),'desc']] %></p>
     </div>
   </fieldset>
+  <fieldset id="preview-fieldset">
+    <legend>Podglad wynikow</legend>
+    <p style="margin:4px 0">
+      <a href="#" class="button" onclick="cmdbDoPreview();return false;">&#128269; Odswiez podglad</a>
+      <span id="cmdb-preview-spinner" style="display:none;margin-left:8px;color:#888">Ladowanie...</span>
+    </p>
+    <div id="cmdb-preview-area" style="overflow-x:auto;min-height:40px;margin-top:6px">
+      <p style="color:#888;font-style:italic;font-size:0.9em">Kliknij "Odswiez podglad" aby zobaczyc wyniki.</p>
+    </div>
+  </fieldset>
+
   <p>
     <%= f.submit l(:button_save), class: 'button-positive', id: 'query-submit-btn' %>
     <%= link_to l(:button_cancel),
@@ -255,4 +266,61 @@ document.getElementById('cmdb-query-form').addEventListener('submit',function(){
   var cols=Array.from(document.getElementById('selected-columns').options).map(function(o){return o.value;});
   document.getElementById('hidden_columns').value=JSON.stringify(cols);
 });
+
+// === CF COLUMNS (dynamic) ===
+var cmdbCfCache = {};
+function cmdbLoadCfColumns(ciClassId) {
+  var key = ciClassId ? String(ciClassId) : 'all';
+  if (cmdbCfCache[key]) { cmdbRenderCfColumns(cmdbCfCache[key]); return; }
+  $.getJSON('/cmdb_queries/cf_columns', ciClassId ? {ci_class_id: ciClassId} : {}, function(data) {
+    cmdbCfCache[key] = data;
+    cmdbRenderCfColumns(data);
+  });
+}
+function cmdbRenderCfColumns(cols) {
+  var avail = document.getElementById('available-columns');
+  var sel   = document.getElementById('selected-columns');
+  if (!avail || !sel) return;
+  Array.from(avail.options).forEach(function(o) { if (o.value.indexOf('cf_')===0) avail.removeChild(o); });
+  var selVals = Array.from(sel.options).map(function(o){ return o.value; });
+  cols.forEach(function(c) {
+    if (selVals.indexOf(c.key) === -1) {
+      var o = document.createElement('option'); o.value = c.key; o.text = c.label; avail.appendChild(o);
+    }
+  });
+}
+// === LIVE PREVIEW ===
+function cmdbDoPreview() {
+  var filters = [];
+  document.querySelectorAll('#filters-tbody .filter-row').forEach(function(row) {
+    var ff = row.querySelector('.filter-field'), fo = row.querySelector('.filter-op'), fv = row.querySelector('.filter-val');
+    if (ff && fv && fv.value !== '') filters.push({field:ff.value, operator:fo?fo.value:'=', value:fv.value});
+  });
+  var cols = Array.from(document.getElementById('selected-columns').options).map(function(o){ return o.value; });
+  var etSel = document.getElementById('entity_type_select');
+  var et = etSel ? etSel.value : (document.querySelector('input[name="hrzcm_query[entity_type]"]')||{value:''}).value;
+  var sc = document.querySelector('[name="hrzcm_query[sort_column]"]');
+  var sd = document.querySelector('[name="hrzcm_query[sort_direction]"]');
+  var token = (document.querySelector('meta[name="csrf-token"]')||{}).getAttribute ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
+  var area = document.getElementById('cmdb-preview-area');
+  var spin = document.getElementById('cmdb-preview-spinner');
+  area.innerHTML = ''; if(spin) spin.style.display='inline';
+  $.ajax({ url:'/cmdb_queries/preview', type:'POST',
+    data:{ hrzcm_query:{ entity_type:et, filters:JSON.stringify(filters), columns:JSON.stringify(cols),
+      sort_column:sc?sc.value:'', sort_direction:sd?sd.value:'asc'}, authenticity_token:token },
+    success:function(html){ area.innerHTML=html; if(spin)spin.style.display='none'; },
+    error:function(xhr){ area.innerHTML=xhr.responseText||'<p class=\"error\">Blad podgladu.</p>'; if(spin)spin.style.display='none'; }
+  });
+}
+$(document).ready(function(){
+  var etSel = document.getElementById('entity_type_select');
+  if (etSel) {
+    if (etSel.value==='ci') cmdbLoadCfColumns(null);
+    etSel.addEventListener('change', function(){ if(this.value==='ci') cmdbLoadCfColumns(null); });
+  } else {
+    var etH = document.querySelector('input[name="hrzcm_query[entity_type]"]');
+    if (etH && etH.value==='ci') cmdbLoadCfColumns(null);
+  }
+});
+
 </script>

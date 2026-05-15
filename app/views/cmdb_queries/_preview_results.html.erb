@@ -1,0 +1,43 @@
+<% if entries.any? %>
+  <p class="cmdb-preview-meta" style="margin:4px 0;font-size:0.9em;color:#555">
+    Podglad &mdash; <%= entry_count %> rekordow lacznie
+    <% if entry_count > 10 %>(pokazuje pierwsze 10)<% end %>
+  </p>
+  <table class="list cmdb-results-table">
+    <thead>
+      <tr>
+        <% query.columns_data.each do |col| %>
+          <th>
+            <% if col.start_with?('cf_') %>
+              <% bkey = col.sub('cf_','') %>
+              <% fd = HrzcmCiCustomFieldDef.find_by(b_key: bkey) %>
+              <%= fd ? "#{fd.b_name} [CF]" : col %>
+            <% else %>
+              <%= l("hrz_cmdb.fields.\#{col}", default: col) %>
+            <% end %>
+          </th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% entries.each do |record| %>
+        <tr>
+          <% query.columns_data.each do |col| %>
+            <td>
+              <% if col.start_with?('cf_') %>
+                <% bkey = col.sub('cf_','') %>
+                <% fd = HrzcmCiCustomFieldDef.find_by(b_key: bkey) %>
+                <% cfv = fd ? HrzcmCiCustomFieldValue.find_by(j_ci_id: record.id, j_field_def_id: fd.id) : nil %>
+                <%= cfv&.display_value.to_s %>
+              <% else %>
+                <%= format_query_result_value(record, col) %>
+              <% end %>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="nodata">Brak wynikow dla podanych filtrow.</p>
+<% end %>

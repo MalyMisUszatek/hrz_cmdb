@@ -89,7 +89,36 @@ class CmdbQueriesController < ApplicationController
     @entries     = scope.offset(@entry_pages.offset).limit(@per_page)
   end
 
+  def cf_columns
+    ci_class_id = params[:ci_class_id].presence
+    cols = HrzcmQuery.cf_columns_for(ci_class_id).map do |col_key, label, _cid, _fid|
+      { key: col_key, label: label }
+    end
+    render json: cols
+  end
+
+  def preview
+    @query = HrzcmQuery.new(query_params_for_preview)
+    @query.user_id = User.current.id
+    scope        = @query.results_scope
+    @entry_count = scope.count
+    @entries     = scope.limit(10)
+    render partial: 'cmdb_queries/preview_results',
+           locals: { query: @query, entries: @entries, entry_count: @entry_count }
+  rescue => e
+    render plain: "<div class='error'>Blad podgladu: #{ERB::Util.html_escape(e.message)}</div>",
+           status: :unprocessable_entity
+  end
+
   private
+
+  def query_params_for_preview
+    params.require(:hrzcm_query).permit(
+      :name, :description, :is_public, :entity_type,
+      :sort_column, :sort_direction, :filters, :columns
+    )
+  end
+
 
   def find_query
     @query = HrzcmQuery.find(params[:id])

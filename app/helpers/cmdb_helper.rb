@@ -74,6 +74,13 @@ module CmdbHelper
   end
 
   def format_query_result_value(record, column)
+    if column.to_s.start_with?('cf_')
+      bkey = column.to_s.sub('cf_', '')
+      fd   = HrzcmCiCustomFieldDef.find_by(b_key: bkey)
+      return '&mdash;'.html_safe unless fd
+      cfv  = HrzcmCiCustomFieldValue.find_by(j_ci_id: record.id, j_field_def_id: fd.id)
+      return cfv ? cfv.display_value.to_s : ''
+    end
     case column
     when 'relations_out'
       rels = HrzcmCiRelation.where(source_ci_id: record.id)
