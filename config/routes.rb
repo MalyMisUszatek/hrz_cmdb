@@ -92,6 +92,11 @@ Rails.application.routes.draw do
   end
 
   # Relations tree (add before the last 'end')
+  # Relation path report
+  get  'cmdb_relation_paths',          to: 'cmdb_relation_paths#index',     as: 'cmdb_relation_paths'
+  post 'cmdb_relation_paths/run',      to: 'cmdb_relation_paths#run',       as: 'run_cmdb_relation_paths'
+  get  'cmdb_relation_paths/ci_search', to: 'cmdb_relation_paths#ci_search', as: 'ci_search_cmdb_relation_paths'
+
   get  'cmdb_relations',           to: 'cmdb_relations#index',     as: 'cmdb_relations'
   get  'cmdb_relations/tree_data', to: 'cmdb_relations#tree_data', as: 'cmdb_relations_tree_data'
 

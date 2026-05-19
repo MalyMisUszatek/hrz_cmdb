@@ -350,6 +350,29 @@ pl:
       show_bmodel: Pokaz Model
       show_btagserial: Pokaz Nr seryjny / Tag
       show_burldoc: Pokaz URL dokumentacji
+    relation_paths:
+      title: "Lancuch relacji — wedlug klasy CI"
+      tab_name: "Lancuch relacji"
+      ci_class_label: "Klasa CI (punkt startowy)"
+      relation_types_label: "Typy relacji"
+      relation_types_hint: "(brak = wszystkie)"
+      direction_label: "Kierunek"
+      direction_out: "Wychodzace (→)"
+      direction_in: "Przychodzace (←)"
+      direction_both: "Oba (← →)"
+      max_depth_label: "Maks. glebokosć (1–6)"
+      max_depth_hint: "poziomy relacji"
+      exclude_ci_label: "Wyklucz CI"
+      exclude_ci_hint: "(wyklucza CI wraz z galęzią podrzędną)"
+      exclude_ci_placeholder: "Wpisz nazwę CI (min. 2 znaki)..."
+      exclude_add_btn: "+ Dodaj"
+      generate_btn: "Generuj lancuch relacji"
+      reset_btn: "Resetuj"
+      export_csv_btn: "Eksport CSV"
+      results_count: "Wyniki — %{count} ściezek"
+      no_results: "Brak ściezek relacji dla podanych parametrów."
+      col_ci: "CI %{n}"
+      col_relation: "relacja"
   label_configuration_items: Elementy konfiguracji
   label_configuration_item: Element konfiguracji
   label_add_ci: Dodaj CI

@@ -1,0 +1,64 @@
+/*
+ * cmdb_theme.css — HRZ CMDB Plugin: Centralne zmienne CSS / Central CSS variables
+ * Wersja / Version: 2026-05-19
+ *
+ * Używaj tych zmiennych we wszystkich widokach i arkuszach pluginu.
+ * Use these variables in all plugin views and stylesheets.
+ */
+
+:root {
+  /* === Kolory główne / Main colors === */
+  --cmdb-accent:           #628DB6;
+  --cmdb-accent-dark:      #169;
+  --cmdb-text:             #484848;
+  --cmdb-text-muted:       #666;
+  --cmdb-text-placeholder: #999;
+
+  /* === Panel / Box === */
+  --cmdb-panel-bg:         #ffffff;
+  --cmdb-panel-border:     1px solid #ddd;
+  --cmdb-panel-radius:     4px;
+  --cmdb-panel-padding:    12px;
+  --cmdb-panel-padding-sm: 10px;
+
+  /* === Filtry (boczny panel) / Filter sidebar === */
+  --cmdb-filter-min-width: 260px;
+  --cmdb-filter-max-width: 280px;
+
+  /* === Nagłówki paneli / Panel headers === */
+  --cmdb-header-bg:        #e8e8e8;
+  --cmdb-header-bg-hover:  #ddd;
+  --cmdb-header-border:    1px solid #ddd;
+
+  /* === Zakładki / Tabs === */
+  --cmdb-tab-bar-border:   #c8c8c8;
+  --cmdb-tab-bg:           #f0f0f0;
+  --cmdb-tab-bg-hover:     #e0e0e0;
+  --cmdb-tab-bg-active:    #ffffff;
+  --cmdb-tab-color:        #555;
+  --cmdb-tab-color-active: #169;
+  --cmdb-tab-padding:      7px 18px;
+  --cmdb-tab-radius:       4px 4px 0 0;
+
+  /* === Sidebar drzewko / Tree sidebar === */
+  --cmdb-sidebar-bg:       #f5f5f5;
+  --cmdb-sidebar-border:   1px solid #ddd;
+  --cmdb-tree-header-bg:   #e0e0e0;
+  --cmdb-tree-header-border: 1px solid #ccc;
+  --cmdb-tree-selected-bg: #e8e8e8;
+  --cmdb-tree-selected-border: 2px solid #628DB6;
+
+  /* === No-data / placeholder === */
+  --cmdb-nodata-padding:   40px;
+  --cmdb-nodata-color:     #888;
+
+  /* === Relacje badges / Relation badges === */
+  --cmdb-badge-bg:         #f0f4f8;
+  --cmdb-badge-border:     1px solid #c8d6e5;
+  --cmdb-badge-radius:     3px;
+  --cmdb-badge-color:      #2980b9;
+
+  /* === Inputs === */
+  --cmdb-input-border:     1px solid #d7d7d7;
+  --cmdb-input-radius:     3px;
+}

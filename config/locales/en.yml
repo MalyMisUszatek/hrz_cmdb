@@ -297,6 +297,29 @@ en:
       show_bmodel: Show Model
       show_btagserial: Show Serial / Tag
       show_burldoc: Show Documentation URL
+    relation_paths:
+      title: "Relation chain — by CI class"
+      tab_name: "Relation chain"
+      ci_class_label: "CI class (starting point)"
+      relation_types_label: "Relation types"
+      relation_types_hint: "(none = all)"
+      direction_label: "Direction"
+      direction_out: "Outgoing (→)"
+      direction_in: "Incoming (←)"
+      direction_both: "Both (← →)"
+      max_depth_label: "Max depth (1–6)"
+      max_depth_hint: "relation levels"
+      exclude_ci_label: "Exclude CI"
+      exclude_ci_hint: "(excludes CI and its subtree)"
+      exclude_ci_placeholder: "Type CI name (min. 2 chars)..."
+      exclude_add_btn: "+ Add"
+      generate_btn: "Generate relation chain"
+      reset_btn: "Reset"
+      export_csv_btn: "Export CSV"
+      results_count: "Results — %{count} paths"
+      no_results: "No relation paths found for given parameters."
+      col_ci: "CI %{n}"
+      col_relation: "relation"
   label_configuration_items: Configuration Items
   label_configuration_item: Configuration Item
   label_add_ci: Add CI
