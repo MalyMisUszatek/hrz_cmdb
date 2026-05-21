@@ -17,10 +17,11 @@
 #          Provides the jsTree data endpoint and enforces group-based permissions for all CMDB entities.
 
 class CmdbController < ApplicationController
-  before_action :check_permissions, except: [:fk_options]
+  before_action :check_permissions, except: [:fk_options, :show_ci]
   before_action :find_location, only: [:show_location, :update_location, :destroy_location]
   before_action :find_ci_class, only: [:show_ci_class, :update_ci_class, :destroy_ci_class]
   before_action :find_ci, only: [:show_ci, :update_ci, :destroy_ci]
+  before_action :check_ci_visibility, only: [:show_ci]
   before_action :find_lifecycle_status, only: [:show_lifecycle_status, :update_lifecycle_status, :destroy_lifecycle_status]
   before_action :find_ext_sys, only: [:show_ext_sys, :update_ext_sys, :destroy_ext_sys]
   before_action :check_edit_permissions, only: [:new_location, :create_location, :update_location, :destroy_location, :new_ci, :create_ci, :update_ci, :destroy_ci]
@@ -487,18 +488,16 @@ class CmdbController < ApplicationController
   # Returns: HTML partial or JSON representation
 
   def show_ci
-    @ci = HrzcmCi.includes(:custom_field_values).find(params[:id])
-    @can_edit = can_edit?
-
+    # @ci set by find_ci, @can_edit and @can_view_ci set by check_ci_visibility
     if request.xhr?
-      render partial: 'ci_details', locals: { ci: @ci, can_edit: @can_edit }
-  else
-    respond_to do |format|
-      format.html
-      format.json { render json: @ci }
+      render partial: 'ci_details', locals: { ci: @ci, can_edit: @can_edit, can_view_ci: @can_view_ci }
+    else
+      respond_to do |format|
+        format.html
+        format.json { render json: @ci }
+      end
     end
   end
-end
 
   # Renders form for creating a new CI.
   # Returns: HTML partial with new CI form
@@ -711,6 +710,25 @@ end
     unless can_view?
       deny_access
     end
+  end
+
+  # Verifies access to show_ci:
+  #   a) standard view_cmdb group permission, OR
+  #   b) user assigned in any CF type='user' for this CI
+  # Requires @ci already set by find_ci before_action.
+  def check_ci_visibility
+    user = User.current
+    if HrzCmdb::PermissionHelper.can_view?(user)
+      @can_view_ci = true
+      @can_edit    = HrzCmdb::PermissionHelper.can_edit?(user)
+      return
+    end
+    if @ci && HrzCmdb::PermissionHelper.can_view_ci?(user, @ci)
+      @can_view_ci = true
+      @can_edit    = false
+      return
+    end
+    deny_access
   end
 
   # Verifies current user has edit_cmdb permission.

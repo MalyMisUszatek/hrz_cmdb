@@ -19,6 +19,118 @@
 <div class="ci-details">
   <h3><%= ci.display_name %></h3>
 
+  <%# ---- READ-ONLY VIEW for users with CI access via CF type='user' ---- %>
+  <% can_view_ci_val = local_assigns.fetch(:can_view_ci, false) %>
+  <% if !can_edit && can_view_ci_val && ci.persisted? %>
+    <table class="ci-readonly-table" style="width:100%; border-collapse:collapse; margin-bottom:1em;">
+      <tbody>
+        <tr>
+          <th style="width:35%; padding:4px 8px; text-align:left; color:#555; font-weight:normal;">
+            <%= l('hrz_cmdb.fields.b_name_full') %>
+          </th>
+          <td style="padding:4px 8px;"><%= ci.b_name_full %></td>
+        </tr>
+        <tr>
+          <th style="padding:4px 8px; text-align:left; color:#555; font-weight:normal;">
+            <%= l('hrz_cmdb.fields.b_name_abbr') %>
+          </th>
+          <td style="padding:4px 8px;"><%= ci.b_name_abbr %></td>
+        </tr>
+        <tr>
+          <th style="padding:4px 8px; text-align:left; color:#555; font-weight:normal;">
+            <%= l('hrz_cmdb.fields.j_ci_class') %>
+          </th>
+          <td style="padding:4px 8px;"><%= ci.ci_class&.b_name_full %></td>
+        </tr>
+        <tr>
+          <th style="padding:4px 8px; text-align:left; color:#555; font-weight:normal;">
+            <%= l('hrz_cmdb.fields.j_location') %>
+          </th>
+          <td style="padding:4px 8px;"><%= ci.location&.b_name_full %></td>
+        </tr>
+        <% if ci.ci_class&.show_bproducer %>
+        <tr>
+          <th style="padding:4px 8px; text-align:left; color:#555; font-weight:normal;">
+            <%= l('hrz_cmdb.fields.b_producer') %>
+          </th>
+          <td style="padding:4px 8px;"><%= ci.b_producer %></td>
+        </tr>
+        <% end %>
+        <% if ci.ci_class&.show_bmodel %>
+        <tr>
+          <th style="padding:4px 8px; text-align:left; color:#555; font-weight:normal;">
+            <%= l('hrz_cmdb.fields.b_model') %>
+          </th>
+          <td style="padding:4px 8px;"><%= ci.b_model %></td>
+        </tr>
+        <% end %>
+        <% if ci.ci_class&.show_btagserial %>
+        <tr>
+          <th style="padding:4px 8px; text-align:left; color:#555; font-weight:normal;">
+            <%= l('hrz_cmdb.fields.b_tag_serial') %>
+          </th>
+          <td style="padding:4px 8px;"><%= ci.b_tag_serial %></td>
+        </tr>
+        <% end %>
+        <tr>
+          <th style="padding:4px 8px; text-align:left; color:#555; font-weight:normal;">
+            <%= l('hrz_cmdb.fields.j_status') %>
+          </th>
+          <td style="padding:4px 8px;"><%= ci.lifecycle_status&.b_name_full %></td>
+        </tr>
+        <tr>
+          <th style="padding:4px 8px; text-align:left; color:#555; font-weight:normal;">
+            <%= l('hrz_cmdb.fields.b_comment') %>
+          </th>
+          <td style="padding:4px 8px; white-space:pre-wrap;"><%= ci.b_comment %></td>
+        </tr>
+        <% if ci.ci_class&.show_burldoc && ci.b_url_doc.present? %>
+        <tr>
+          <th style="padding:4px 8px; text-align:left; color:#555; font-weight:normal;">
+            <%= l('hrz_cmdb.fields.b_url_doc') %>
+          </th>
+          <td style="padding:4px 8px;">
+            <%= link_to ci.b_url_doc, ci.b_url_doc, target: '_blank', rel: 'noopener' %>
+          </td>
+        </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <%# Custom fields read-only %>
+    <% field_defs = ci.ci_class&.inherited_custom_field_defs || [] %>
+    <% if field_defs.any? %>
+      <div style="border-top:1px solid #e0e0e0; margin-top:0.5em; padding-top:0.5em;">
+        <h4 style="font-size:0.95em; color:#333; margin-bottom:0.5em;">
+          🔧 <%= l('hrz_cmdb.custom_fields.section_title') %>
+        </h4>
+        <table style="width:100%; border-collapse:collapse;">
+          <tbody>
+            <% field_defs.each do |fd| %>
+              <% cfv = ci.custom_field_values.find { |v| v.j_field_def_id == fd.id } %>
+              <% raw_val = cfv&.value %>
+              <% next if raw_val.blank? %>
+              <tr>
+                <th style="width:35%; padding:3px 8px; text-align:left; color:#555; font-weight:normal; font-size:0.88em;">
+                  <%= fd.b_name %>
+                </th>
+                <td style="padding:3px 8px; font-size:0.88em;">
+                  <% if fd.field_type == 'user' %>
+                    <% u = fd.user_value(raw_val) %>
+                    <%= u ? "#{u.firstname} #{u.lastname} (#{u.login})" : raw_val %>
+                  <% elsif fd.field_type == 'bool' %>
+                    <%= raw_val == '1' ? '✓' : '✗' %>
+                  <% else %>
+                    <%= fd.cast_value(raw_val) %>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  <% end %>
+  <%# ---- END READ-ONLY VIEW ---- %>
   <% if can_edit %>
     <%= form_tag "/cmdb/cis/#{ci.id}", method: :put, id: 'ci-form', class: 'ci-form' do %>
       <div class="form-group">

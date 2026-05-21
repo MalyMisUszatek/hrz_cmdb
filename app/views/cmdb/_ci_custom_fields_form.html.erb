@@ -77,6 +77,15 @@
                     current_val
                   ),
                   class: 'form-control' %>
+          <% when 'user' %>
+            <% users_for_cf = User.active.order(:firstname, :lastname) %>
+            <%= select_tag "cf[#{fd.id}]",
+                  options_for_select(
+                    [[ l('hrz_cmdb.custom_fields.select_user'), '' ]] +
+                      users_for_cf.map { |u| ["#{u.firstname} #{u.lastname} (#{u.login})", u.id.to_s] },
+                    current_val.to_s
+                  ),
+                  class: 'form-control' %>
           <% end %>
         </div>
       </div>

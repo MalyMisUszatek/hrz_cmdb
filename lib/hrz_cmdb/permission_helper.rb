@@ -74,6 +74,20 @@ module HrzCmdb
       def can_edit_basic_data?(user)
         user_has_permission?(user, 'edit_basic_data')
       end
+
+      # Checks if user can view a specific CI:
+      #   a) standard view_cmdb group permission, OR
+      #   b) assigned in any CF type='user' for this CI
+      def can_view_ci?(user, ci)
+        return false unless user
+        return true if user.admin?
+        return true if can_view?(user)
+        ci.custom_field_values
+          .joins(:field_def)
+          .where(hrzcm_ci_custom_field_defs: { field_type: 'user' })
+          .where(hrzcm_ci_custom_field_values: { value: user.id.to_s })
+          .exists?
+      end
     end
   end
 end

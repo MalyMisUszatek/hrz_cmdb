@@ -6,7 +6,7 @@
 class HrzcmCiCustomFieldDef < ActiveRecord::Base
   self.table_name = 'hrzcm_ci_custom_field_defs'
 
-  FIELD_TYPES = %w[text integer float date bool list].freeze
+  FIELD_TYPES = %w[text integer float date bool list user].freeze
 
   belongs_to :ci_class, class_name: 'HrzcmCiClass', foreign_key: 'j_ci_class_id'
   has_many   :field_values, class_name: 'HrzcmCiCustomFieldValue',
@@ -42,8 +42,15 @@ class HrzcmCiCustomFieldDef < ActiveRecord::Base
     when 'float'   then raw.to_f
     when 'date'    then Date.parse(raw) rescue raw
     when 'bool'    then raw == '1' || raw == 'true'
+    when 'user'    then raw.to_i
     else raw
     end
+  end
+
+  # Returns User object for field_type='user'
+  def user_value(raw)
+    return nil unless field_type == 'user' && raw.present?
+    User.find_by(id: raw.to_i)
   end
 
   # Human-readable type label

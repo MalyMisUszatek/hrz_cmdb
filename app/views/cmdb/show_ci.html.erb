@@ -22,4 +22,4 @@
 
 <h2><%= @ci.display_name %></h2>
 
-<%= render partial: 'ci_details', locals: { ci: @ci, can_edit: @can_edit } %>
+<%= render partial: 'ci_details', locals: { ci: @ci, can_edit: @can_edit, can_view_ci: @can_view_ci } %>

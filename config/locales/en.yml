@@ -290,6 +290,8 @@ en:
         date: Date
         bool: Checkbox
         list: List
+        user: "User"
+      select_user: "— select user —"
     field_visibility:
       title: Standard field visibility
       hint: Unchecked fields will be hidden in the CI form.

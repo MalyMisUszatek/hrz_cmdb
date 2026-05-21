@@ -343,6 +343,8 @@ pl:
         date: Data
         bool: Pole wyboru
         list: Lista
+        user: "Użytkownik"
+      select_user: "— wybierz użytkownika —"
     field_visibility:
       title: Widocznosc pol standardowych
       hint: Odznaczone pola beda ukryte w formularzu CI.

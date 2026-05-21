@@ -24,6 +24,10 @@ class HrzcmCiCustomFieldValue < ActiveRecord::Base
   def display_value
     return '✓' if field_def.field_type == 'bool' && value == '1'
     return '✗' if field_def.field_type == 'bool'
+    if field_def.field_type == 'user'
+      u = field_def.user_value(value)
+      return u ? "#{u.firstname} #{u.lastname} (#{u.login})" : value.to_s
+    end
     typed_value.to_s
   end
 
