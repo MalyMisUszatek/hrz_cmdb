@@ -229,9 +229,31 @@
 
       <div class="form-group">
   
-      <%# ---- Custom Fields — after Comment ---- %>
-      <%= render partial: 'cmdb/ci_custom_fields_form',
-                 locals: { ci: ci, ci_class_id: ci.j_ci_class_id } %>
+      <%# ---- Custom Fields — after Comment — grouped by ui_tab / pogrupowane wg ui_tab ---- %>
+      <% edit_field_defs = ci.ci_class&.inherited_custom_field_defs || [] %>
+      <% if edit_field_defs.any? %>
+        <% edit_tab_groups = edit_field_defs.group_by { |fd| fd.ui_tab.to_s.presence || 'other' } %>
+        <% edit_tab_order  = ['standard', 'other'].select { |t| edit_tab_groups.key?(t) } %>
+        <% edit_tab_order += (edit_tab_groups.keys - edit_tab_order) %>
+        <div class="hrzcm-cf-tabs">
+          <div class="hrzcm-cf-tab-bar">
+            <% edit_tab_order.each_with_index do |tab, i| %>
+              <a href="#" class="hrzcm-cf-tab-btn<%= i == 0 ? ' active' : '' %>"
+                 data-tab="cf-edit-<%= tab %>-<%= ci.id %>">
+                <%= l("hrz_cmdb.custom_fields.ui_tab_\#{tab}", default: tab.capitalize) %>
+              </a>
+            <% end %>
+          </div>
+          <% edit_tab_order.each_with_index do |tab, i| %>
+            <div id="cf-edit-<%= tab %>-<%= ci.id %>"
+                 class="hrzcm-cf-tab-panel<%= i == 0 ? ' active' : '' %>">
+              <%= render partial: 'cmdb/ci_custom_fields_form',
+                         locals: { ci: ci, ci_class_id: ci.j_ci_class_id,
+                                   tab_scope: tab } %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
 
       </div>
 
@@ -299,3 +321,23 @@
   <% end %>
 
 </div>
+
+<script>
+(function() {
+  document.querySelectorAll('.hrzcm-cf-tabs').forEach(function(container) {
+    container.removeEventListener('click', container._tabHandler);
+    container._tabHandler = function(e) {
+      var btn = e.target.closest('.hrzcm-cf-tab-btn');
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      container.querySelectorAll('.hrzcm-cf-tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      container.querySelectorAll('.hrzcm-cf-tab-panel').forEach(function(p){ p.classList.remove('active'); });
+      btn.classList.add('active');
+      var panel = document.getElementById(btn.dataset.tab);
+      if (panel) panel.classList.add('active');
+    };
+    container.addEventListener('click', container._tabHandler);
+  });
+})();
+</script>

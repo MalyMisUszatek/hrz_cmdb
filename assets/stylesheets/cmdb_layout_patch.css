@@ -95,3 +95,53 @@
   font-size: 11px; white-space: nowrap;
 }
 .cmdb-rel-type { color: var(--cmdb-badge-color); font-weight: bold; font-style: italic; }
+
+/* CF ui_tab badge / znacznik zakladki CF */
+.cf-tab-badge    { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+.cf-tab-standard { background:#d4edda; color:#155724; }
+.cf-tab-other    { background:#d1ecf1; color:#0c5460; }
+
+/* CF tabs in CI detail / Zakladki CF w szczegolach CI */
+.hrzcm-cf-tabs        { margin-top:6px; }
+.hrzcm-cf-tab-bar     { display:flex; gap:4px; border-bottom:2px solid #d0d7de; margin-bottom:8px; }
+.hrzcm-cf-tab-btn     { padding:4px 14px; border:1px solid transparent; border-bottom:none;
+                         border-radius:4px 4px 0 0; font-size:0.88em; cursor:pointer;
+                         color:#3c5a99; text-decoration:none; background:#f6f8fa; }
+.hrzcm-cf-tab-btn.active { background:#fff; border-color:#d0d7de; color:#24292f;
+                            font-weight:600; margin-bottom:-2px; border-bottom:2px solid #fff; }
+.hrzcm-cf-tab-panel   { display:none; }
+.hrzcm-cf-tab-panel.active { display:block; }
+
+/* Full-width + layout fix for CF tabs (Standard/Other) - fixed 2026-07-29 */
+.hrzcm-cf-tabs,
+.hrzcm-cf-tab-panel,
+.hrzcm-cf-tab-panel .custom-fields-ci-section {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+.hrzcm-cf-tab-panel .custom-fields-ci-section > div[style*="grid-template-columns"] {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+  gap: 1em 1.5em !important;
+}
+.hrzcm-cf-tab-panel .custom-fields-ci-section .form-group {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0;
+}
+.hrzcm-cf-tab-panel .custom-fields-ci-section .form-group label {
+  display: block !important;
+  margin-bottom: 4px;
+  white-space: normal;
+}
+.hrzcm-cf-tab-panel .custom-fields-ci-section .field-wrapper {
+  width: 100%;
+}
+.hrzcm-cf-tab-panel .custom-fields-ci-section .field-wrapper .form-control,
+.hrzcm-cf-tab-panel .custom-fields-ci-section .field-wrapper select,
+.hrzcm-cf-tab-panel .custom-fields-ci-section .field-wrapper input {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  max-width: 100%;
+}

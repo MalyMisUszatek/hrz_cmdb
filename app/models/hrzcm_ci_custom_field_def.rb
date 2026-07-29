@@ -8,10 +8,13 @@ class HrzcmCiCustomFieldDef < ActiveRecord::Base
 
   FIELD_TYPES = %w[text integer float date bool list user].freeze
 
+  UI_TABS = %w[standard other].freeze
+
   belongs_to :ci_class, class_name: 'HrzcmCiClass', foreign_key: 'j_ci_class_id'
   has_many   :field_values, class_name: 'HrzcmCiCustomFieldValue',
              foreign_key: 'j_field_def_id', dependent: :destroy
 
+  validates :ui_tab, inclusion: { in: UI_TABS }, allow_nil: false
   validates :b_name,      presence: true, length: { maximum: 120 }
   validates :b_key,       presence: true, length: { maximum: 60 },
             format: { with: /\A[a-z0-9_]+\z/, message: 'only lowercase letters, digits, underscore' },

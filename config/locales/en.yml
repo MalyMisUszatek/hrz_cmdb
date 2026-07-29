@@ -268,11 +268,26 @@ en:
         cannot_relate_to_self: CI cannot be related to itself
         already_exists: This relation already exists
     custom_fields:
+      ui_tab: "Tab / Section"
+      ui_tab_standard: "Standard"
+      ui_tab_other: "Other"
       inherited_from: "Inherited from: %{class_name}"
       section_title: Custom Fields
       title: Custom Fields
       no_fields_defined: No custom fields defined.
       add_new_field: Add new field
+      labels:
+        name: "Name"
+        key: "Key (a-z\_)"
+        field_type: "Type"
+        is_required: "Required"
+        default_value: "Default value"
+        description: "Description"
+        list_options: "List options (one per line)"
+      buttons:
+        add: "Add"
+        save: "Save"
+        cancel: "Cancel"
       description: Description
       description_hint: Shown as tooltip on hover.
       description_placeholder: Optional tooltip description

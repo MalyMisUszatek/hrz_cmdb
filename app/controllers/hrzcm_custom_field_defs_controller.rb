@@ -96,7 +96,7 @@ class HrzcmCustomFieldDefsController < ApplicationController
   def field_def_params
     p = params.require(:field_def).permit(
       :b_name, :b_key, :field_type, :is_required,
-      :default_value, :j_sort, :list_values, :bdescription
+      :default_value, :j_sort, :list_values, :bdescription, :ui_tab
     )
     # list_values przychodzi jako textarea (jedna wartość na linię) -> JSON
     if p[:list_values].present?

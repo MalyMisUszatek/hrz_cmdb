@@ -12,20 +12,23 @@
 
   <%# --- Lista istniejących pól --- %>
   <% if ci_class.custom_field_defs.any? %>
+    <% col_count = can_edit ? 7 : 6 %>
     <table style="width:100%; border-collapse:collapse; font-size:0.88em; margin-bottom:0.8em;">
       <thead>
         <tr style="background:#f5f5f5; border-bottom:1px solid #ddd;">
-          <th style="padding:4px 8px; text-align:left;"><%= l('hrz_cmdb.custom_fields.table_headers.name', default: 'Name') %></th>
-          <th style="padding:4px 8px;"><%= l('hrz_cmdb.custom_fields.table_headers.key', default: 'Key') %></th>
-          <th style="padding:4px 8px;"><%= l('hrz_cmdb.custom_fields.table_headers.type', default: 'Type') %></th>
+          <th style="padding:4px 8px; text-align:left;"><%= l('hrz_cmdb.custom_fields.table_headers.name',     default: 'Name') %></th>
+          <th style="padding:4px 8px;">Zakładka</th>
+          <th style="padding:4px 8px;"><%= l('hrz_cmdb.custom_fields.table_headers.key',      default: 'Key') %></th>
+          <th style="padding:4px 8px;"><%= l('hrz_cmdb.custom_fields.table_headers.type',     default: 'Type') %></th>
           <th style="padding:4px 8px;"><%= l('hrz_cmdb.custom_fields.table_headers.required', default: 'Required') %></th>
-          <th style="padding:4px 8px;"><%= l('hrz_cmdb.custom_fields.table_headers.default', default: 'Default') %></th>
+          <th style="padding:4px 8px;"><%= l('hrz_cmdb.custom_fields.table_headers.default',  default: 'Default') %></th>
           <% if can_edit %><th style="padding:4px 8px;"><%= l('hrz_cmdb.custom_fields.table_headers.actions', default: 'Actions') %></th><% end %>
         </tr>
       </thead>
       <tbody>
         <% ci_class.custom_field_defs.each do |fd| %>
           <tr style="border-bottom:1px solid #eee;">
+            <%# Kolumna 1: Nazwa %>
             <td style="padding:4px 8px; font-weight:bold;">
               <%= fd.b_name %>
               <% if fd.bdescription.present? %>
@@ -33,7 +36,15 @@
                       style="cursor:help; color:#3c5a99; font-size:0.85em; margin-left:4px;">ℹ</span>
               <% end %>
             </td>
+            <%# Kolumna 2: Zakładka (badge) %>
+            <td style="padding:4px 8px;">
+              <span class="cf-tab-badge cf-tab-<%= fd.ui_tab %>">
+                <%= l("hrz_cmdb.custom_fields.ui_tab_#{fd.ui_tab}") %>
+              </span>
+            </td>
+            <%# Kolumna 3: Klucz %>
             <td style="padding:4px 8px; font-family:monospace; font-size:0.9em;"><%= fd.b_key %></td>
+            <%# Kolumna 4: Typ %>
             <td style="padding:4px 8px;">
               <span style="background:#e8f0fe; padding:2px 6px; border-radius:3px; font-size:0.85em;">
                 <%= fd.field_type_label %>
@@ -44,12 +55,15 @@
                 </span>
               <% end %>
             </td>
+            <%# Kolumna 5: Wymagane %>
             <td style="padding:4px 8px; text-align:center;">
               <%= fd.is_required ? '✓' : '' %>
             </td>
+            <%# Kolumna 6: Wartość domyślna %>
             <td style="padding:4px 8px; color:#666; font-size:0.88em;">
               <%= fd.default_value %>
             </td>
+            <%# Kolumna 7: Akcje %>
             <% if can_edit %>
               <td style="padding:4px 8px; white-space:nowrap;">
                 <%= link_to '✏️',
@@ -76,7 +90,7 @@
           <%# Inline edit form (hidden) %>
           <% if can_edit %>
             <tr id="edit-field-def-<%= fd.id %>" style="display:none; background:#fffbf0;">
-              <td colspan="6" style="padding:8px;">
+              <td colspan="<%= col_count %>" style="padding:8px;">
                 <%= render partial: 'hrzcm_custom_field_defs/field_def_form',
                            locals: { ci_class: ci_class, field_def: fd,
                                      action_url: ci_class_custom_fields_update_path(
@@ -90,7 +104,7 @@
     </table>
   <% else %>
     <p style="color:#888; font-size:0.9em; margin-bottom:0.8em;">
-      No custom fields defined yet. / Brak zdefiniowanych pól niestandardowych.
+      <%= l('hrz_cmdb.custom_fields.no_fields_defined', default: 'No custom fields defined.') %>
     </p>
   <% end %>
 

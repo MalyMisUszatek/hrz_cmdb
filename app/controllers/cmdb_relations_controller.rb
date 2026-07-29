@@ -2,6 +2,8 @@ class CmdbRelationsController < ApplicationController
   before_action :require_login
   before_action :check_permissions
 
+  SYMMETRIC_TYPES = %w[connected_to].freeze
+
   def index
     @ci_list     = HrzcmCi.ordered_by_abbr
     @selected_ci = params[:ci_id].present? ? HrzcmCi.find_by(id: params[:ci_id]) : nil
@@ -40,13 +42,15 @@ class CmdbRelationsController < ApplicationController
   def build_tree(ci, direction, rel_types, depth, visited)
     node = {
       id:       ci.id,
-      name:     ci.b_name_abbr || ci.b_name_full || "CI##{ci.id}",
+      name:     ci.b_name_abbr || ci.b_name_full || "CI\#{ci.id}",
       ci_class: ci.ci_class&.b_name_abbr || '',
       status:   ci.lifecycle_status&.b_key || '',
       children: []
     }
     return node if depth <= 0 || visited.include?(ci.id)
     visited = visited + [ci.id]
+
+    sym_types = rel_types & SYMMETRIC_TYPES
 
     if direction == 'down' || direction == 'both'
       ci.outgoing_relations.where(relation_type: rel_types).includes(:target_ci).each do |rel|
@@ -55,6 +59,16 @@ class CmdbRelationsController < ApplicationController
         child[:via] = rel.relation_type
         child[:direction_out] = true
         node[:children] << child
+      end
+      if sym_types.any?
+        ci.incoming_relations.where(relation_type: sym_types).includes(:source_ci).each do |rel|
+          next unless rel.source_ci
+          next if visited.include?(rel.source_ci.id)
+          child = build_tree(rel.source_ci, direction, rel_types, depth - 1, visited)
+          child[:via] = rel.relation_type
+          child[:direction_out] = true
+          node[:children] << child
+        end
       end
     end
 
@@ -65,6 +79,16 @@ class CmdbRelationsController < ApplicationController
         child[:via] = rel.relation_type
         child[:direction_in] = true
         node[:children] << child
+      end
+      if sym_types.any?
+        ci.outgoing_relations.where(relation_type: sym_types).includes(:target_ci).each do |rel|
+          next unless rel.target_ci
+          next if visited.include?(rel.target_ci.id)
+          child = build_tree(rel.target_ci, direction, rel_types, depth - 1, visited)
+          child[:via] = rel.relation_type
+          child[:direction_in] = true
+          node[:children] << child
+        end
       end
     end
 

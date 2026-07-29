@@ -1,3 +1,6 @@
+<%
+  tab_scope = local_assigns.fetch(:tab_scope, nil)
+%>
 <%# CSS tooltip - no JS needed %>
 <style>
 .hrzcm-tip:hover .hrzcm-tip-box {
@@ -10,6 +13,7 @@
 <% ci_class_id_val = ci_class_id || ci&.j_ci_class_id %>
 <% ci_class = ci_class_id_val.present? ? HrzcmCiClass.find_by(id: ci_class_id_val) : nil %>
 <% field_defs = ci_class&.inherited_custom_field_defs || [] %>
+<% field_defs = field_defs.select { |fd| fd.ui_tab.to_s == tab_scope.to_s } if tab_scope.present? %>
 <% return if field_defs.empty? %>
 
 <div class="custom-fields-ci-section"

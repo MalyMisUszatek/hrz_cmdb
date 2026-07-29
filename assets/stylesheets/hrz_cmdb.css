@@ -625,3 +625,22 @@ input[type="submit"] {
 .hrzcm-cf-value { font-size: 0.9em; }
 .hrzcm-cf-label { font-weight: bold; color: #444; font-size: 0.88em; }
 /* ---- end ---- */
+
+/* ── Relation map legend pills / Pigułki legendy mapy relacji ── */
+.cmdb-rel-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #fff;
+  margin: 2px 0;
+  background: #888;
+}
+.cmdb-rel-runs-on       { background: #2980b9; }
+.cmdb-rel-depends-on    { background: #8e44ad; }
+.cmdb-rel-contains      { background: #27ae60; }
+.cmdb-rel-connected-to  { background: #16a085; }
+.cmdb-rel-installed-on  { background: #d35400; }
+.cmdb-rel-virtualizes   { background: #c0392b; }
+.cmdb-rel-backs-up      { background: #7f8c8d; }
