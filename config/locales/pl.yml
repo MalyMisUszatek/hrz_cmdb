@@ -72,6 +72,9 @@ pl:
       has_subclasses: 'Nie można usunąć: klasa CI ma podklasy'
       has_cis: 'Nie można usunąć: klasa CI jest używana przez elementy konfiguracji'
       cannot_delete_in_use: 'Nie można usunąć: klasa CI jest nadal w użyciu'
+      cf_tab_standard_label: "Nazwa zakładki Podstawowe (opcjonalnie)"
+      cf_tab_other_label: "Nazwa zakładki Inne (opcjonalnie)"
+      cf_tab_label_hint: "Pozostaw puste, aby użyć nazwy domyślnej"
     cis:
       title: Elementy konfiguracji
       new: Utwórz nowy CI
@@ -322,8 +325,9 @@ pl:
       results_count: 'Wyniki: %{count}'
     custom_fields:
       ui_tab: "Zakładka"
-      ui_tab_standard: "Standardowe"
+      ui_tab_standard: "Podstawowe"
       ui_tab_other: "Inne"
+      ui_tab_documentation: "Dokumentacja"
       inherited_from: "Dziedziczone z: %{class_name}"
       section_title: Pola niestandardowe
       title: Pola niestandardowe

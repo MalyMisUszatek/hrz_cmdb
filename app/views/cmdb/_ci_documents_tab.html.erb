@@ -1,0 +1,43 @@
+<%# Partial: Documentation tab content - attachments only / Zawartosc zakladki Dokumentacja - tylko zalaczniki
+    Locals: ci [HrzcmCi], can_edit [Boolean] %>
+<% attachments = HrzcmCiAttachment.for_ci(ci.id) %>
+
+<div style="padding-top:4px">
+  <% if attachments.any? %>
+    <table class="list" style="font-size:12px;margin-bottom:8px">
+      <thead><tr>
+        <th><%= l('hrz_cmdb.documents.file', default: 'Plik') %></th>
+        <th><%= l('hrz_cmdb.documents.description', default: 'Opis') %></th>
+        <th><%= l('hrz_cmdb.documents.size', default: 'Rozmiar') %></th>
+        <th></th>
+      </tr></thead>
+      <tbody>
+        <% attachments.each do |att| %>
+          <tr>
+            <td><%= link_to att.filename, cmdb_ci_attachment_download_path(ci_id: ci.id, att_id: att.id) %></td>
+            <td style="font-size:11px"><%= att.description.presence || '—' %></td>
+            <td><%= att.human_filesize %></td>
+            <td><% if can_edit %>
+              <%= link_to '✕', cmdb_ci_attachment_path(ci_id: ci.id, att_id: att.id),
+                  method: :delete, data: { confirm: l('hrz_cmdb.documents.confirm_delete', default: 'Usunąć plik?') } %>
+            <% end %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="nodata" style="font-size:12px;margin-bottom:6px"><%= l('hrz_cmdb.documents.no_attachments', default: 'Brak załączników.') %></p>
+  <% end %>
+
+  <% if can_edit %>
+    <div class="box" style="padding:8px;max-width:420px">
+      <strong style="font-size:12px"><%= l('hrz_cmdb.documents.add_file', default: 'Dodaj plik:') %></strong>
+      <%= form_tag cmdb_ci_attachments_path(ci_id: ci.id), multipart: true, style: 'margin-top:4px' do %>
+        <p style="margin:4px 0"><input type="file" name="file" style="width:100%;font-size:12px"></p>
+        <p style="margin:4px 0"><input type="text" name="description" maxlength="512"
+           placeholder="<%= l('hrz_cmdb.documents.description_placeholder', default: 'Krótki opis...') %>" style="width:100%;font-size:12px"></p>
+        <p style="margin:4px 0"><%= submit_tag l('hrz_cmdb.buttons.add', default: 'Dodaj'), class: 'button button-positive' %></p>
+      <% end %>
+    </div>
+  <% end %>
+</div>

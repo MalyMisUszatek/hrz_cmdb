@@ -819,7 +819,8 @@ class CmdbController < ApplicationController
   def ci_class_params
     params.require(:ci_class).permit(:b_name_full, :b_name_abbr, :b_comment,
         :show_bproducer, :show_bmodel, :show_btagserial, :show_burldoc,
-                                     :b_url_doc, :b_key, :j_sort, :j_subclass_of_id)
+                                     :b_url_doc, :b_key, :j_sort, :j_subclass_of_id,
+                                     :cf_tab_standard_label, :cf_tab_other_label)
   end
 
   # Strong parameters filter for CI attributes.

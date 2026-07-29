@@ -33,6 +33,9 @@ class HrzcmCiClass < ActiveRecord::Base
   # Standard field visibility per CI class (default: true)
   # Columns: show_bproducer, show_bmodel, show_btagserial, show_burldoc
 
+  validates :cf_tab_standard_label, length: { maximum: 60 }
+  validates :cf_tab_other_label,    length: { maximum: 60 }
+
   validates :b_name_full, length: { maximum: 120 }
   validates :b_name_abbr, length: { maximum: 15 }
   validates :b_comment, length: { maximum: 10000 }
@@ -126,4 +129,13 @@ class HrzcmCiClass < ActiveRecord::Base
     self.updated_by = User.current&.id if User.current
     self.updated_on = Time.current
   end
+  public
+
+  # Returns effective tab label / Zwraca efektywna nazwe zakladki
+  # tab: 'standard' or 'other'
+  def cf_tab_label(tab)
+    val = tab.to_s == 'standard' ? cf_tab_standard_label : cf_tab_other_label
+    val.presence || I18n.t("hrz_cmdb.custom_fields.ui_tab_#{tab}", default: tab.to_s.capitalize)
+  end
+
 end

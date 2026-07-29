@@ -229,18 +229,24 @@
 
       <div class="form-group">
   
-      <%# ---- Custom Fields — after Comment — grouped by ui_tab / pogrupowane wg ui_tab ---- %>
+      <%# ---- Custom Fields tabs + Documentation tab / Zakladki pol CF + zakladka Dokumentacja ---- %>
       <% edit_field_defs = ci.ci_class&.inherited_custom_field_defs || [] %>
-      <% if edit_field_defs.any? %>
-        <% edit_tab_groups = edit_field_defs.group_by { |fd| fd.ui_tab.to_s.presence || 'other' } %>
-        <% edit_tab_order  = ['standard', 'other'].select { |t| edit_tab_groups.key?(t) } %>
-        <% edit_tab_order += (edit_tab_groups.keys - edit_tab_order) %>
+      <% edit_tab_groups = edit_field_defs.group_by { |fd| fd.ui_tab.to_s.presence || 'other' } %>
+      <% edit_tab_order  = ['standard', 'other'].select { |t| edit_tab_groups.key?(t) } %>
+      <% edit_tab_order += (edit_tab_groups.keys - edit_tab_order) %>
+      <% if ci.persisted? || edit_tab_order.any? %>
         <div class="hrzcm-cf-tabs">
           <div class="hrzcm-cf-tab-bar">
             <% edit_tab_order.each_with_index do |tab, i| %>
               <a href="#" class="hrzcm-cf-tab-btn<%= i == 0 ? ' active' : '' %>"
                  data-tab="cf-edit-<%= tab %>-<%= ci.id %>">
-                <%= l("hrz_cmdb.custom_fields.ui_tab_\#{tab}", default: tab.capitalize) %>
+                <%= ci.ci_class ? ci.ci_class.cf_tab_label(tab) : l("hrz_cmdb.custom_fields.ui_tab_\#{tab}", default: tab.capitalize) %>
+              </a>
+            <% end %>
+            <% if ci.persisted? %>
+              <a href="#" class="hrzcm-cf-tab-btn<%= edit_tab_order.empty? ? ' active' : '' %>"
+                 data-tab="cf-edit-documentation-<%= ci.id %>">
+                <%= l('hrz_cmdb.custom_fields.ui_tab_documentation', default: 'Documentation') %>
               </a>
             <% end %>
           </div>
@@ -250,6 +256,12 @@
               <%= render partial: 'cmdb/ci_custom_fields_form',
                          locals: { ci: ci, ci_class_id: ci.j_ci_class_id,
                                    tab_scope: tab } %>
+            </div>
+          <% end %>
+          <% if ci.persisted? %>
+            <div id="cf-edit-documentation-<%= ci.id %>"
+                 class="hrzcm-cf-tab-panel<%= edit_tab_order.empty? ? ' active' : '' %>">
+              <%= render partial: 'cmdb/ci_documents_tab', locals: { ci: ci, can_edit: can_edit } %>
             </div>
           <% end %>
         </div>

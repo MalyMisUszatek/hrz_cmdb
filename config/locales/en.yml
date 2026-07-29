@@ -72,6 +72,10 @@ en:
       has_subclasses: 'Cannot delete: CI class has subclasses'
       has_cis: 'Cannot delete: CI class is used by configuration items'
       cannot_delete_in_use: 'Cannot delete: CI class is still in use'
+      cf_tab_standard_label: "Standard tab name (optional)"
+      cf_tab_other_label: "Other tab name (optional)"
+      cf_tab_label_hint: "Leave empty to use default name"
+      cf_tab_documentation_label: "Documentation tab"
     cis:
       title: Configuration Items
       new: Create new CI
@@ -267,10 +271,22 @@ en:
         relation_not_found: Relation not found
         cannot_relate_to_self: CI cannot be related to itself
         already_exists: This relation already exists
+    history_and_docs: History and documents
+    audit:
+      actions:
+        create: Created
+        update: Field changed
+        delete: Deleted
+        relation_added: Relation added
+        relation_removed: Relation removed
+        replaced: CI replaced
+        attachment_added: Added file
+        attachment_removed: Removed file
     custom_fields:
       ui_tab: "Tab / Section"
       ui_tab_standard: "Standard"
       ui_tab_other: "Other"
+      ui_tab_documentation: "Documentation"
       inherited_from: "Inherited from: %{class_name}"
       section_title: Custom Fields
       title: Custom Fields

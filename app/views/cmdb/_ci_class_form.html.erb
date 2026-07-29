@@ -51,6 +51,24 @@
     </div>
 
     <div class="form-group">
+      <%= label_tag :cf_tab_standard_label, l('hrz_cmdb.ci_classes.cf_tab_standard_label') %>
+      <div class="field-wrapper">
+        <%= text_field_tag 'ci_class[cf_tab_standard_label]', '', class: 'form-control', maxlength: 60,
+              placeholder: l('hrz_cmdb.custom_fields.ui_tab_standard') %>
+        <span class="hint"><%= l('hrz_cmdb.ci_classes.cf_tab_label_hint') %></span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <%= label_tag :cf_tab_other_label, l('hrz_cmdb.ci_classes.cf_tab_other_label') %>
+      <div class="field-wrapper">
+        <%= text_field_tag 'ci_class[cf_tab_other_label]', '', class: 'form-control', maxlength: 60,
+              placeholder: l('hrz_cmdb.custom_fields.ui_tab_other') %>
+        <span class="hint"><%= l('hrz_cmdb.ci_classes.cf_tab_label_hint') %></span>
+      </div>
+    </div>
+
+    <div class="form-group">
       <%= label_tag :j_subclass_of_id, l('hrz_cmdb.fields.j_subclass_of') %>
       <div class="field-wrapper">
         <%= select_tag 'ci_class[j_subclass_of_id]',
