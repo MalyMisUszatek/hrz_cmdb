@@ -6,7 +6,7 @@
 class HrzcmCiCustomFieldDef < ActiveRecord::Base
   self.table_name = 'hrzcm_ci_custom_field_defs'
 
-  FIELD_TYPES = %w[text integer float date bool list user].freeze
+  FIELD_TYPES = %w[text integer float date bool list user issue_ref].freeze
 
   UI_TABS = %w[standard other].freeze
 
@@ -46,6 +46,7 @@ class HrzcmCiCustomFieldDef < ActiveRecord::Base
     when 'date'    then Date.parse(raw) rescue raw
     when 'bool'    then raw == '1' || raw == 'true'
     when 'user'    then raw.to_i
+    when 'issue_ref' then raw.to_i
     else raw
     end
   end
@@ -54,6 +55,12 @@ class HrzcmCiCustomFieldDef < ActiveRecord::Base
   def user_value(raw)
     return nil unless field_type == 'user' && raw.present?
     User.find_by(id: raw.to_i)
+  end
+
+  # Returns Issue object for field_type='issue_ref'
+  def issue_value(raw)
+    return nil unless field_type == 'issue_ref' && raw.present?
+    Issue.find_by(id: raw.to_i)
   end
 
   # Human-readable type label

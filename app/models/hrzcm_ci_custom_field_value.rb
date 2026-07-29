@@ -28,6 +28,12 @@ class HrzcmCiCustomFieldValue < ActiveRecord::Base
       u = field_def.user_value(value)
       return u ? "#{u.firstname} #{u.lastname} (#{u.login})" : value.to_s
     end
+    if field_def.field_type == 'issue_ref'
+      issue = field_def.issue_value(value)
+      return value.to_s unless issue
+      assignee = issue.assigned_to ? "#{issue.assigned_to.firstname} #{issue.assigned_to.lastname}" : I18n.t('hrz_cmdb.custom_fields.issue_ref.unassigned', default: 'Unassigned')
+      return "##{issue.id}: #{issue.subject} (#{assignee})"
+    end
     typed_value.to_s
   end
 

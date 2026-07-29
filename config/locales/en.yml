@@ -322,7 +322,13 @@ en:
         bool: Checkbox
         list: List
         user: "User"
+        issue_ref: "Linked Issue"
       select_user: "— select user —"
+      issue_ref:
+        placeholder: "Enter issue ID"
+        not_found: "Issue not found"
+        assignee: "Assignee"
+        unassigned: "Unassigned"
     field_visibility:
       title: Standard field visibility
       hint: Unchecked fields will be hidden in the CI form.

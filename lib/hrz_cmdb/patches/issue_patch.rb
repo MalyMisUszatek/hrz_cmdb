@@ -26,6 +26,37 @@ module HrzCmdb
         base.class_eval do
           has_many :ci_issues, class_name: 'HrzcmCiIssue', foreign_key: 'issue_id', dependent: :destroy
           has_many :cis, through: :ci_issues, class_name: 'HrzcmCi'
+
+          after_save :hrz_cmdb_log_linked_issue_assignee_change
+
+          # Logs a CI audit entry when the assignee of an issue changes,
+          # for every CI linked to this issue via an 'issue_ref' custom field.
+          def hrz_cmdb_log_linked_issue_assignee_change
+            return unless saved_change_to_attribute?(:assigned_to_id)
+
+            linked_values = HrzcmCiCustomFieldValue
+                              .joins(:field_def)
+                              .where(value: id.to_s)
+                              .where(hrzcm_ci_custom_field_defs: { field_type: 'issue_ref' })
+
+            return if linked_values.empty?
+
+            old_id, new_id = saved_change_to_attribute(:assigned_to_id)
+            old_user = old_id.present? ? User.find_by(id: old_id) : nil
+            new_user = new_id.present? ? User.find_by(id: new_id) : nil
+            old_name = old_user ? "#{old_user.firstname} #{old_user.lastname}" : I18n.t('hrz_cmdb.custom_fields.issue_ref.unassigned', default: 'Unassigned')
+            new_name = new_user ? "#{new_user.firstname} #{new_user.lastname}" : I18n.t('hrz_cmdb.custom_fields.issue_ref.unassigned', default: 'Unassigned')
+
+            linked_values.each do |cf_value|
+              ci = cf_value.ci
+              next unless ci
+              field_label = cf_value.field_def.b_name.presence || I18n.t('hrz_cmdb.custom_fields.types.issue_ref', default: 'Linked Issue')
+              HrzcmCiAudit.log(ci, action: 'update',
+                field: "#{field_label} - #{I18n.t('hrz_cmdb.custom_fields.issue_ref.assignee', default: 'Assignee')}",
+                old_val: "##{id}: #{old_name}",
+                new_val: "##{id}: #{new_name}")
+            end
+          end
         end
       end
     end

@@ -363,7 +363,13 @@ pl:
         bool: Pole wyboru
         list: Lista
         user: "Użytkownik"
+        issue_ref: "Powiazane zgloszenie"
       select_user: "— wybierz użytkownika —"
+      issue_ref:
+        placeholder: "Wpisz numer zgloszenia"
+        not_found: "Nie znaleziono zgloszenia"
+        assignee: "Przypisany do"
+        unassigned: "Nieprzypisane"
     field_visibility:
       title: Widocznosc pol standardowych
       hint: Odznaczone pola beda ukryte w formularzu CI.
