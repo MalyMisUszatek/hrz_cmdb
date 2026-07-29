@@ -247,6 +247,9 @@ pl:
       confirm_delete: Czy na pewno usunąć tę relację?
       direction: Kierunek
       delete: Usuń relację
+      edit: Edytuj relację
+      save: Zapisz
+      cancel: Anuluj
       created: Relacja utworzona pomyślnie
       deleted: Relacja usunięta pomyślnie
       replaced: Relacje CI przeniesione pomyślnie na nowe CI

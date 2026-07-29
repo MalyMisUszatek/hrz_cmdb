@@ -826,10 +826,45 @@ var HrzCmdb = {
         }
       }
     });
-  }                           
+  },
+
+  editRelation: function(ciId, relationId) {
+    $('#relation-row-' + relationId).hide();
+    $('#relation-edit-row-' + relationId).show();
+  },
+
+  cancelEditRelation: function(relationId) {
+    $('#relation-edit-row-' + relationId).hide();
+    $('#relation-row-' + relationId).show();
+  }
 };
 
 // Handle ci-relation form submission via AJAX
+// Handle ci-relation edit form submission via AJAX
+$(document).on('submit', '.ci-relation-edit-form', function(e) {
+  e.preventDefault();
+  var form = $(this);
+  var formId = form.attr('id') || '';
+  var relationId = formId.replace('edit-relation-form-', '');
+  var ciId = form.attr('action').match(/\/cis\/(\d+)\/relations\//)[1];
+  $.ajax({
+    url: form.attr('action'),
+    method: 'POST',
+    data: form.serialize() + '&_method=patch',
+    headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+    success: function(data) {
+      if (data.success) {
+        HrzCmdb.loadNode('ci', 'ci_' + ciId);
+      } else {
+        alert(data.errors ? data.errors.join('\n') : 'Error');
+      }
+    },
+    error: function() {
+      alert('Error saving relation');
+    }
+  });
+});
+
 $(document).on('submit', '.ci-relation-new-form', function(e) {
   e.preventDefault();
   var form = $(this);

@@ -1,8 +1,8 @@
 class CiRelationsController < ApplicationController
   before_action :find_ci
   before_action :check_view_permission
-  before_action :find_relation, only: [:destroy]
-  before_action :check_edit_permission, only: [:create, :destroy, :replace]
+  before_action :find_relation, only: [:destroy, :update]
+  before_action :check_edit_permission, only: [:create, :destroy, :update, :replace]
 
   def index
     @relations = @ci.all_relations
@@ -36,6 +36,26 @@ class CiRelationsController < ApplicationController
         render json: { success: true, notice: I18n.t('hrz_cmdb.ci_relations.deleted') }
       else
         flash[:notice] = I18n.t('hrz_cmdb.ci_relations.deleted')
+        redirect_to "/cmdb/ci/#{@ci.id}"
+      end
+    else
+      if request.xhr? || request.format.json?
+        render json: { success: false, errors: @relation.errors.full_messages }
+      else
+        flash[:error] = @relation.errors.full_messages.join(', ')
+        redirect_to "/cmdb/ci/#{@ci.id}"
+      end
+    end
+  end
+
+  def update
+    if @relation.update(update_relation_params)
+      if request.xhr? || request.format.json?
+        render json: { success: true, notice: I18n.t('hrz_cmdb.ci_relations.updated'),
+                        relation_type: @relation.relation_type,
+                        relation_type_label: I18n.t("hrz_cmdb.ci_relations.types.#{@relation.relation_type}", default: @relation.relation_type) }
+      else
+        flash[:notice] = I18n.t('hrz_cmdb.ci_relations.updated')
         redirect_to "/cmdb/ci/#{@ci.id}"
       end
     else
@@ -115,5 +135,18 @@ class CiRelationsController < ApplicationController
 
   def relation_params
     params.require(:ci_relation).permit(:target_ci_id, :relation_type, :b_comment)
+  end
+
+  def update_relation_params
+    raw = params.require(:ci_relation).permit(:relation_type, :related_ci_id)
+    result = { relation_type: raw[:relation_type] }
+    return result unless raw[:related_ci_id].present?
+
+    if @relation.source_ci_id == @ci.id
+      result[:target_ci_id] = raw[:related_ci_id]
+    else
+      result[:source_ci_id] = raw[:related_ci_id]
+    end
+    result
   end
 end

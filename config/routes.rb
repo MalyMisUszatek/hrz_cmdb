@@ -78,6 +78,7 @@ Rails.application.routes.draw do
     get  'relations',     to: 'ci_relations#index',   as: :relations
     post 'relations',     to: 'ci_relations#create'
     delete 'relations/:id', to: 'ci_relations#destroy', as: :relation
+    patch  'relations/:id', to: 'ci_relations#update'
     post 'replace',       to: 'ci_relations#replace', as: :replace
   end
 

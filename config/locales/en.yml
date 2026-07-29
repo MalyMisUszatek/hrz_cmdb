@@ -249,6 +249,9 @@ en:
       confirm_delete: Are you sure you want to delete this relation?
       direction: Direction
       delete: Delete relation
+      edit: Edit relation
+      save: Save
+      cancel: Cancel
       types:
         depends_on: Depends on
         is_dependency_of: Is dependency of

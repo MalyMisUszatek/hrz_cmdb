@@ -17,26 +17,66 @@
         <% relations.each do |rel| %>
           <% is_source = rel.source_ci_id == ci.id %>
           <% other_ci  = is_source ? rel.target_ci : rel.source_ci %>
-          <tr>
+          <tr id="relation-row-<%= rel.id %>" class="relation-view-row">
             <td><%= is_source ? '&rarr;'.html_safe : '&larr;'.html_safe %></td>
-            <td>
+            <td class="relation-type-display">
               <% type_key = is_source ? rel.relation_type : rel.inverse_type %>
               <%= l("hrz_cmdb.ci_relations.types.#{type_key}", default: type_key) %>
             </td>
-            <td>
+            <td class="relation-ci-display">
               <a href="#" onclick="HrzCmdb.loadNode('ci', 'ci_<%= other_ci.id %>'); return false;">
                 <%= other_ci.tree_label %>
               </a>
             </td>
             <td><%= rel.b_comment %></td>
             <% if can_edit %>
-              <td>
+              <td class="relation-actions" style="white-space:nowrap;">
+                <% if is_source %>
+                  <a href="#" class="icon icon-edit"
+                     title="<%= l('hrz_cmdb.ci_relations.edit') %>"
+                     onclick="HrzCmdb.editRelation(<%= ci.id %>, <%= rel.id %>); return false;"><%= sprite_icon('edit') %></a>
+                <% end %>
                 <a href="#" class="icon icon-del"
                    title="<%= l('hrz_cmdb.ci_relations.delete') %>"
                    onclick="HrzCmdb.deleteRelation(<%= ci.id %>, <%= rel.id %>); return false;"><%= sprite_icon('del') %></a>
               </td>
             <% end %>
           </tr>
+          <% if can_edit && is_source %>
+          <tr id="relation-edit-row-<%= rel.id %>" class="relation-edit-row" style="display:none;">
+            <td colspan="5">
+              <%= form_tag "/cmdb/cis/#{ci.id}/relations/#{rel.id}", method: :patch,
+                           id: "edit-relation-form-#{rel.id}", class: 'ci-relation-edit-form',
+                           remote: false do %>
+                <div style="display:flex; gap:10px; align-items:flex-end; padding:6px 0;">
+                  <div class="form-group" style="margin:0;">
+                    <label style="font-size:0.85em;"><%= l('hrz_cmdb.ci_relations.relation_type') %></label>
+                    <%= select_tag 'ci_relation[relation_type]',
+                                   options_for_select(
+                                     HrzcmCiRelation::RELATION_TYPES.map { |t|
+                                       [l("hrz_cmdb.ci_relations.types.#{t}", default: t), t]
+                                     }, rel.relation_type
+                                   ), class: 'form-control form-control-short' %>
+                  </div>
+                  <div class="form-group" style="margin:0; flex:1;">
+                    <label style="font-size:0.85em;"><%= l('hrz_cmdb.ci_relations.related_ci') %></label>
+                    <%= select_tag 'ci_relation[related_ci_id]',
+                                   options_for_select(
+                                     HrzcmCi.ordered_by_abbr.where.not(id: ci.id).map { |c| [c.tree_label, c.id] },
+                                     other_ci.id
+                                   ), class: 'form-control' %>
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <%= submit_tag l('hrz_cmdb.ci_relations.save'), class: 'button button-positive' %>
+                    <a href="#" class="button" onclick="HrzCmdb.cancelEditRelation(<%= rel.id %>); return false;">
+                      <%= l('hrz_cmdb.ci_relations.cancel') %>
+                    </a>
+                  </div>
+                </div>
+              <% end %>
+            </td>
+          </tr>
+          <% end %>
         <% end %>
       </tbody>
     </table>
