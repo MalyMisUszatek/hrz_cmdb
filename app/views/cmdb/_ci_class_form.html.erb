@@ -70,14 +70,22 @@
 
     <div class="form-group">
       <%= label_tag :j_subclass_of_id, l('hrz_cmdb.fields.j_subclass_of') %>
-      <div class="field-wrapper">
-        <%= select_tag 'ci_class[j_subclass_of_id]',
-                       options_for_select(
-                         [[l('hrz_cmdb.select_ci_class'), '']] +
-                         HrzcmCiClass.ordered_by_sort_and_abbr.map { |c| ["#{c.b_name_abbr} - #{c.b_name_full}", c.id] }
-                       ),
-                       class: 'form-control',
-                       id: 'ci_class_j_subclass_of_id' %>
+      <div class="field-wrapper" style="display:flex; gap:6px;">
+        <%= hidden_field_tag 'ci_class[j_subclass_of_id]', '', id: 'ci_class_j_subclass_of_id' %>
+        <%= text_field_tag 'ci_class_j_subclass_of_id_text', '',
+                       class: 'form-control', id: 'ci_class_j_subclass_of_id_text',
+                       readonly: true, placeholder: l('hrz_cmdb.select_ci_class') %>
+        <a href="#" class="button"
+           onclick="HrzCmdb.openTreePicker({
+             rootParentId: 'ci_classes',
+             selectableType: 'ci_class',
+             targetIdField: 'ci_class_j_subclass_of_id',
+             targetTextField: 'ci_class_j_subclass_of_id_text',
+             titleText: '<%= j l('hrz_cmdb.fields.j_subclass_of') %>'
+           }); return false;">Select</a>
+        <a href="#" class="icon icon-cancel"
+           title="<%= l('hrz_cmdb.ci_relations.cancel') %>"
+           onclick="$('#ci_class_j_subclass_of_id').val(''); $('#ci_class_j_subclass_of_id_text').val(''); return false;">&times;</a>
       </div>
     </div>
 

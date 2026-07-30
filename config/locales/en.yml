@@ -44,6 +44,10 @@ en:
         b_model: Model
         b_tag_serial: Tag, Serial Number, Inventory Number
         j_status_id: Lifecycle status
+    errors:
+      models:
+        hrzcm_ci_relation:
+          relation_already_exists: This relation already exists
   hrz_cmdb:
     select_item: Select an item from the tree to view details
     select_type: Select type

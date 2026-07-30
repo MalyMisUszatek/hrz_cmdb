@@ -64,6 +64,8 @@ class CmdbController < ApplicationController
   def tree_data
     # Returns JSON data for the tree structure
     nodes = []
+    picker_mode = params[:picker_mode].present?
+    exclude_class_id = params[:exclude_id].present? ? params[:exclude_id].to_i : nil
 
     # -------------------------------------------------------------------------
     # Root of the tree
@@ -197,8 +199,8 @@ class CmdbController < ApplicationController
     # -------------------------------------------------------------------------
     # CI classes
     elsif params[:parent_id] == 'ci_classes'
-      # Add "Create new CI class" node
-      if can_edit_basic_data?
+      # Add "Create new CI class" node (hidden in picker mode)
+      if can_edit_basic_data? && !picker_mode
         nodes << {
           id: 'new_ci_class',
           text: I18n.t('hrz_cmdb.ci_classes.new'),
@@ -208,8 +210,9 @@ class CmdbController < ApplicationController
         }
       end
 
-      # Add root CI classes
+      # Add root CI classes (excluding a specific class when picking a superclass)
       HrzcmCiClass.root_classes.ordered_by_sort_and_abbr.each do |ci_class|
+        next if exclude_class_id && ci_class.id == exclude_class_id
         nodes << ci_class_to_tree_node(ci_class)
       end
     # -------------------------------------------------------------------------
@@ -251,8 +254,8 @@ class CmdbController < ApplicationController
     # -------------------------------------------------------------------------
     # CIs by CI Class
     elsif params[:parent_id] == 'cis_by_class'
-      # CIs organized by CI Class - show root CI classes with their CIs
-      if can_edit?
+      # CIs organized by CI Class - show root CI classes with their CIs (hidden action in picker mode)
+      if can_edit? && !picker_mode
         nodes << {
           id: 'new_ci',
           text: I18n.t('hrz_cmdb.cis.new'),
@@ -263,7 +266,7 @@ class CmdbController < ApplicationController
       end
 
       HrzcmCiClass.root_classes.ordered_by_sort_and_abbr.each do |ci_class|
-        nodes << ci_class_for_ci_tree_node(ci_class)
+        nodes << ci_class_for_ci_tree_node(ci_class, exclude_class_id)
       end
     # -------------------------------------------------------------------------
     # Show subclasses and CIs of this CI class
@@ -272,11 +275,13 @@ class CmdbController < ApplicationController
 
       # Add subclasses
       HrzcmCiClass.for_parent(ci_class_id).ordered_by_sort_and_abbr.each do |subclass|
-        nodes << ci_class_for_ci_tree_node(subclass)
+        nodes << ci_class_for_ci_tree_node(subclass, exclude_class_id)
       end
 
-      # Add CIs of this class
-      HrzcmCi.for_ci_class(ci_class_id).ordered_by_abbr.each do |ci|
+      # Add CIs of this class (excluding a specific CI, if given via exclude_id)
+      cis_scope = HrzcmCi.for_ci_class(ci_class_id).ordered_by_abbr
+      cis_scope = cis_scope.where.not(id: exclude_class_id) if exclude_class_id
+      cis_scope.each do |ci|
         nodes << ci_to_tree_node(ci)
       end
     # -------------------------------------------------------------------------
@@ -294,6 +299,7 @@ class CmdbController < ApplicationController
       ci_class = HrzcmCiClass.find_by(id: ci_class_id)
       if ci_class
         HrzcmCiClass.for_parent(ci_class_id).ordered_by_sort_and_abbr.each do |subclass|
+          next if exclude_class_id && subclass.id == exclude_class_id
           nodes << ci_class_to_tree_node(subclass)
         end
       end
@@ -907,9 +913,11 @@ class CmdbController < ApplicationController
   # Parameter ci_class: HrzcmCiClass instance to convert
   # Returns: Hash with jsTree node structure (id, text, icon, children, type, title)
   # Note: Checks for subclasses and CIs to determine if node should have children
-  def ci_class_for_ci_tree_node(ci_class)
-    # Check if this CI class has subclasses or CIs
-    has_children = ci_class.has_subclasses? || HrzcmCi.for_ci_class(ci_class.id).exists?
+  def ci_class_for_ci_tree_node(ci_class, exclude_ci_id = nil)
+    # Check if this CI class has subclasses or CIs (excluding a specific CI, if given)
+    cis_scope = HrzcmCi.for_ci_class(ci_class.id)
+    cis_scope = cis_scope.where.not(id: exclude_ci_id) if exclude_ci_id
+    has_children = ci_class.has_subclasses? || cis_scope.exists?
 
     node = {
       id: "ci_class_for_ci_#{ci_class.id}",

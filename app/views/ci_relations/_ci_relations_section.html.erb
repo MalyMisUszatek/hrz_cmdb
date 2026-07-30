@@ -60,11 +60,21 @@
                   </div>
                   <div class="form-group" style="margin:0; flex:1;">
                     <label style="font-size:0.85em;"><%= l('hrz_cmdb.ci_relations.related_ci') %></label>
-                    <%= select_tag 'ci_relation[related_ci_id]',
-                                   options_for_select(
-                                     HrzcmCi.ordered_by_abbr.where.not(id: ci.id).map { |c| [c.tree_label, c.id] },
-                                     other_ci.id
-                                   ), class: 'form-control' %>
+                    <div style="display:flex; gap:6px;">
+                      <%= hidden_field_tag 'ci_relation[related_ci_id]', other_ci.id, id: "edit_relation_related_ci_id_#{rel.id}" %>
+                      <%= text_field_tag "edit_relation_related_ci_id_text_#{rel.id}", other_ci.tree_label,
+                                     class: 'form-control', readonly: true,
+                                     id: "edit_relation_related_ci_id_text_#{rel.id}" %>
+                      <a href="#" class="button"
+                         onclick="HrzCmdb.openTreePicker({
+                           rootParentId: 'cis_by_class',
+                           selectableType: 'ci',
+                           excludeId: <%= ci.id %>,
+                           targetIdField: 'edit_relation_related_ci_id_<%= rel.id %>',
+                           targetTextField: 'edit_relation_related_ci_id_text_<%= rel.id %>',
+                           titleText: '<%= j l('hrz_cmdb.ci_relations.related_ci') %>'
+                         }); return false;">Select</a>
+                    </div>
                   </div>
                   <div class="form-group" style="margin:0;">
                     <%= submit_tag l('hrz_cmdb.ci_relations.save'), class: 'button button-positive' %>
@@ -100,11 +110,22 @@
         </div>
         <div class="form-group">
           <%= label_tag :target_ci_id, l('hrz_cmdb.ci_relations.related_ci') %>
-          <%= select_tag 'ci_relation[target_ci_id]',
-                         options_for_select(
-                           [[l('hrz_cmdb.select_item'), '']] +
-                           HrzcmCi.ordered_by_abbr.where.not(id: ci.id).map { |c| [c.tree_label, c.id] }
-                         ), class: 'form-control' %>
+          <div style="display:flex; gap:6px;">
+            <%= hidden_field_tag 'ci_relation[target_ci_id]', '', id: "new_relation_target_ci_id_#{ci.id}" %>
+            <%= text_field_tag "new_relation_target_ci_id_text_#{ci.id}", '',
+                           class: 'form-control', readonly: true,
+                           id: "new_relation_target_ci_id_text_#{ci.id}",
+                           placeholder: l('hrz_cmdb.select_item') %>
+            <a href="#" class="button"
+               onclick="HrzCmdb.openTreePicker({
+                 rootParentId: 'cis_by_class',
+                 selectableType: 'ci',
+                 excludeId: <%= ci.id %>,
+                 targetIdField: 'new_relation_target_ci_id_<%= ci.id %>',
+                 targetTextField: 'new_relation_target_ci_id_text_<%= ci.id %>',
+                 titleText: '<%= j l('hrz_cmdb.ci_relations.related_ci') %>'
+               }); return false;">Select</a>
+          </div>
         </div>
         <div class="form-group">
           <%= label_tag :b_comment, l('hrz_cmdb.fields.b_comment') %>

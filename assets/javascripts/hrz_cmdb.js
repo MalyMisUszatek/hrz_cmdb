@@ -24,6 +24,7 @@ var HrzCmdb = {
     this.options = options;
     this.initTree();
     this.bindEvents();
+    this.bindPickerEvents();
   },
 
   initTree: function() {
@@ -836,6 +837,152 @@ var HrzCmdb = {
   cancelEditRelation: function(relationId) {
     $('#relation-edit-row-' + relationId).hide();
     $('#relation-row-' + relationId).show();
+  },
+
+  // ---------------------------------------------------------------------
+  // Tree picker modal (used to select a CI class or a CI via a tree
+  // instead of a flat <select>). Uses its own CSS classes/prefixes so it
+  // never collides with the main navigation tree event bindings.
+  // ---------------------------------------------------------------------
+  pickerConfig: null,
+
+  openTreePicker: function(config) {
+    // config: { rootParentId, selectableType, excludeId, targetIdField, targetTextField, titleText }
+    this.pickerConfig = config;
+
+    if ($('#hrz-tree-picker-modal').length === 0) {
+      var modal = $(
+        '<div id="hrz-tree-picker-modal" class="hrz-picker-overlay" style="display:none;">' +
+          '<div class="hrz-picker-box">' +
+            '<div class="hrz-picker-header">' +
+              '<span class="hrz-picker-title"></span>' +
+              '<a href="#" class="hrz-picker-close" onclick="HrzCmdb.closeTreePicker(); return false;">&times;</a>' +
+            '</div>' +
+            '<div class="hrz-picker-body"><div id="hrz-picker-tree" class="picker-tree-list"></div></div>' +
+          '</div>' +
+        '</div>'
+      );
+      $('body').append(modal);
+
+      if ($('#hrz-picker-styles').length === 0) {
+        $('head').append(
+          '<style id="hrz-picker-styles">' +
+          '.hrz-picker-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:9999;}' +
+          '.hrz-picker-box{background:#fff;width:480px;max-height:70vh;margin:8vh auto;border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,0.3);display:flex;flex-direction:column;}' +
+          '.hrz-picker-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #ddd;}' +
+          '.hrz-picker-title{font-weight:bold;}' +
+          '.hrz-picker-close{font-size:20px;text-decoration:none;color:#666;}' +
+          '.hrz-picker-body{overflow-y:auto;padding:10px 14px;flex:1;}' +
+          '.picker-tree-list{list-style:none;margin:0;padding-left:0;}' +
+          '.picker-tree-list ul{list-style:none;margin:0;padding-left:18px;}' +
+          '.picker-node-content{cursor:pointer;padding:3px 4px;border-radius:3px;}' +
+          '.picker-node-content:hover{background:#eef4fb;}' +
+          '.picker-node-content.picker-selectable{font-weight:normal;}' +
+          '.picker-expander{display:inline-block;width:14px;cursor:pointer;}' +
+          '</style>'
+        );
+      }
+    }
+
+    $('#hrz-tree-picker-modal .hrz-picker-title').text(config.titleText || '');
+    $('#hrz-picker-tree').empty();
+    $('#hrz-tree-picker-modal').show();
+    this.loadPickerNode(config.rootParentId, $('#hrz-picker-tree'));
+  },
+
+  closeTreePicker: function() {
+    $('#hrz-tree-picker-modal').hide();
+  },
+
+  loadPickerNode: function(parentId, container) {
+    var self = this;
+    var data = { picker_mode: 1 };
+    if (parentId) data.parent_id = parentId;
+    if (this.pickerConfig && this.pickerConfig.excludeId) data.exclude_id = this.pickerConfig.excludeId;
+
+    $.ajax({
+      url: this.options.treeDataUrl,
+      data: data,
+      dataType: 'json',
+      success: function(nodes) {
+        self.renderPickerNodes(nodes, container);
+      },
+      error: function(xhr, status, error) {
+        console.error('Failed to load picker tree data:', status, error);
+      }
+    });
+  },
+
+  renderPickerNodes: function(nodes, container) {
+    var self = this;
+    var ul = $('<ul></ul>');
+
+    $.each(nodes, function(index, node) {
+      // Skip action nodes (new_ci, new_ci_class, etc.) - picker_mode already
+      // hides most of them server-side, but guard here too.
+      if (node.type && node.type.indexOf('new_') === 0) return;
+
+      var li = $('<li class="picker-tree-node" data-id="' + node.id + '" data-type="' + node.type + '"></li>');
+      var content = $('<div class="picker-node-content"></div>');
+
+      if (node.children) {
+        content.append('<span class="picker-expander collapsed">&#9656;</span>');
+      } else {
+        content.append('<span class="picker-expander" style="visibility:hidden;">&#9656;</span>');
+      }
+
+      var isSelectable = self.pickerConfig && node.type === self.pickerConfig.selectableType;
+      if (isSelectable) content.addClass('picker-selectable');
+
+      content.append($('<span></span>').text(node.text));
+      if (node.title) content.attr('title', node.title);
+
+      li.append(content);
+      ul.append(li);
+    });
+
+    container.empty().append(ul);
+  },
+
+  bindPickerEvents: function() {
+    var self = this;
+
+    $(document).on('click', '.picker-expander', function(e) {
+      e.stopPropagation();
+      var expander = $(this);
+      var node = expander.closest('.picker-tree-node');
+
+      if (expander.hasClass('collapsed')) {
+        var childContainer = node.find('> .picker-tree-children');
+        if (childContainer.length === 0) {
+          childContainer = $('<div class="picker-tree-children"></div>');
+          node.append(childContainer);
+          self.loadPickerNode(node.data('id'), childContainer);
+        } else {
+          childContainer.show();
+        }
+        expander.removeClass('collapsed').html('&#9662;');
+      } else {
+        node.find('> .picker-tree-children').hide();
+        expander.addClass('collapsed').html('&#9656;');
+      }
+    });
+
+    $(document).on('click', '.picker-node-content', function(e) {
+      var node = $(this).closest('.picker-tree-node');
+      var nodeType = node.data('type');
+      var nodeId = String(node.data('id'));
+
+      if (self.pickerConfig && nodeType === self.pickerConfig.selectableType) {
+        var rawId = nodeId.replace(/^[a-z_]+_/, '');
+        var text = $(this).find('span').last().text();
+        $('#' + self.pickerConfig.targetIdField).val(rawId);
+        $('#' + self.pickerConfig.targetTextField).val(text);
+        self.closeTreePicker();
+      } else {
+        $(this).find('.picker-expander').trigger('click');
+      }
+    });
   }
 };
 
@@ -847,12 +994,14 @@ $(document).on('submit', '.ci-relation-edit-form', function(e) {
   var formId = form.attr('id') || '';
   var relationId = formId.replace('edit-relation-form-', '');
   var ciId = form.attr('action').match(/\/cis\/(\d+)\/relations\//)[1];
+  var submitBtn = form.find('input[type="submit"]');
   $.ajax({
     url: form.attr('action'),
     method: 'POST',
     data: form.serialize() + '&_method=patch',
     headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
     success: function(data) {
+      submitBtn.prop('disabled', false);
       if (data.success) {
         HrzCmdb.loadNode('ci', 'ci_' + ciId);
       } else {
@@ -860,6 +1009,7 @@ $(document).on('submit', '.ci-relation-edit-form', function(e) {
       }
     },
     error: function() {
+      submitBtn.prop('disabled', false);
       alert('Error saving relation');
     }
   });
@@ -870,12 +1020,14 @@ $(document).on('submit', '.ci-relation-new-form', function(e) {
   var form = $(this);
   var formId = form.attr('id') || '';
   var ciId = formId.replace('new-relation-form-', '');
+  var submitBtn = form.find('input[type="submit"]');
   $.ajax({
     url: form.attr('action'),
     method: 'POST',
     data: form.serialize(),
     headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
     success: function(data) {
+      submitBtn.prop('disabled', false);
       if (data.success) {
         HrzCmdb.loadNode('ci', 'ci_' + ciId);
       } else {
@@ -883,6 +1035,7 @@ $(document).on('submit', '.ci-relation-new-form', function(e) {
       }
     },
     error: function(xhr) {
+      submitBtn.prop('disabled', false);
       alert('Error: ' + xhr.status);
     }
   });

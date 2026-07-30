@@ -44,6 +44,10 @@ pl:
         b_model: Model
         b_tag_serial: Tag, Numer seryjny, Numer inwentarzowy
         j_status_id: Status cyklu życia
+    errors:
+      models:
+        hrzcm_ci_relation:
+          relation_already_exists: Taka relacja już istnieje
   hrz_cmdb:
     select_item: Wybierz element z drzewa, aby wyświetlić szczegóły
     select_type: Wybierz typ
