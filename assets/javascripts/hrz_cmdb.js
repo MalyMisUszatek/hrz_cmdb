@@ -976,7 +976,7 @@ var HrzCmdb = {
       if (self.pickerConfig && nodeType === self.pickerConfig.selectableType) {
         var rawId = nodeId.replace(/^[a-z_]+_/, '');
         var text = $(this).find('span').last().text();
-        $('#' + self.pickerConfig.targetIdField).val(rawId);
+        $('#' + self.pickerConfig.targetIdField).val(rawId).trigger('change');
         $('#' + self.pickerConfig.targetTextField).val(text);
         self.closeTreePicker();
       } else {

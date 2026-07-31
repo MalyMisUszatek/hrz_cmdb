@@ -149,15 +149,8 @@
 
       <div class="form-group">
         <%= label_tag :j_ci_class_id, l('hrz_cmdb.fields.j_ci_class') %> <span class="required">*</span>
-        <div class="field-wrapper">
-          <%= select_tag 'ci[j_ci_class_id]',
-                         options_for_select(
-                           [[l('hrz_cmdb.select_ci_class'), '']] +
-                           HrzcmCiClass.ordered_by_sort_and_abbr.map { |c| ["#{c.b_name_abbr} - #{c.b_name_full}", c.id] },
-                           ci.j_ci_class_id
-                         ),
-                         class: 'form-control',
-                         id: 'ci_j_ci_class_id',
+        <div class="field-wrapper" style="display:flex; gap:6px;">
+          <%= hidden_field_tag 'ci[j_ci_class_id]', ci.j_ci_class_id, id: 'ci_j_ci_class_id',
                          'data-ci-class-id': ci.j_ci_class_id,
                          'data-visibility': HrzcmCiClass.all.each_with_object({}) { |cc, h|
                            h[cc.id.to_s] = {
@@ -166,8 +159,19 @@
                              t: cc.show_btagserial ? 1 : 0,
                              u: cc.show_burldoc    ? 1 : 0
                            }
-                         }.to_json,
-                         required: true %>
+                         }.to_json %>
+          <%= text_field_tag 'ci_j_ci_class_id_text',
+                         (ci.ci_class ? "#{ci.ci_class.b_name_abbr} - #{ci.ci_class.b_name_full}" : ''),
+                         class: 'form-control', id: 'ci_j_ci_class_id_text',
+                         readonly: true, placeholder: l('hrz_cmdb.select_ci_class') %>
+          <a href="#" class="button"
+             onclick="HrzCmdb.openTreePicker({
+               rootParentId: 'ci_classes',
+               selectableType: 'ci_class',
+               targetIdField: 'ci_j_ci_class_id',
+               targetTextField: 'ci_j_ci_class_id_text',
+               titleText: '<%= j l('hrz_cmdb.fields.j_ci_class') %>'
+             }); return false;"><%= l('hrz_cmdb.ci_relations.select', default: 'Select') %></a>
         </div>
       </div>
 

@@ -132,6 +132,7 @@ pl:
       j_type_id: Typ hierarchii
       j_part_of1_id: Lokalizacja nadrzędna
       j_subclass_of_id: Nadklasa
+      j_subclass_of: Nadklasa
       j_sort: Kolejność
       created_on: Data utworzenia
       updated_on: Data modyfikacji
