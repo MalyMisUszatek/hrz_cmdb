@@ -1148,3 +1148,46 @@ HrzCmdb.applyCiVisibility = function() {
   }
 };
 // ---- end applyCiVisibility ----
+
+// Attachment upload (Documentation tab) - plain button + FormData AJAX.
+// Deliberately NOT a <form> submit: this widget lives inside the main
+// #ci-form and a nested <form> breaks the outer form's HTML parsing
+// (incident 2026-08-06 - "Zapisz" button stopped responding for all CIs).
+$(document).on('click', '.hrzcm-attachment-submit', function(e) {
+  e.preventDefault();
+  var btn = $(this);
+  var wrapper = btn.closest('.hrzcm-attachment-upload');
+  var uploadUrl = wrapper.data('upload-url');
+  var fileInput = wrapper.find('.hrzcm-attachment-file')[0];
+  var description = wrapper.find('.hrzcm-attachment-description').val();
+
+  if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+    alert('Wybierz plik / Please select a file');
+    return;
+  }
+
+  var formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  formData.append('description', description || '');
+
+  btn.prop('disabled', true);
+
+  $.ajax({
+    url: uploadUrl,
+    method: 'POST',
+    data: formData,
+    processData: false,
+    contentType: false,
+    headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+    success: function(data) {
+      btn.prop('disabled', false);
+      var formEl = wrapper.closest('form');
+      var match = formEl.length ? formEl.attr('action').match(/\/cis\/(\d+)/) : null;
+      if (match) { HrzCmdb.loadNode('ci', 'ci_' + match[1]); }
+    },
+    error: function(xhr) {
+      btn.prop('disabled', false);
+      alert('Error uploading file: ' + xhr.status);
+    }
+  });
+});

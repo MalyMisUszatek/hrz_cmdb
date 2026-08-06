@@ -1,5 +1,11 @@
 <%# Partial: Documentation tab content - attachments only / Zawartosc zakladki Dokumentacja - tylko zalaczniki
-    Locals: ci [HrzcmCi], can_edit [Boolean] %>
+    Locals: ci [HrzcmCi], can_edit [Boolean]
+    NOTE: This partial is rendered INSIDE the main CI edit form (#ci-form).
+    It MUST NOT contain a nested form tag (invalid HTML5 - nested forms get
+    auto-closed by the browser parser, which drags the outer form's closing
+    tag forward and detaches the real "Save" button from #ci-form).
+    See incident 2026-08-06: "Zapisz" button stopped responding for all CIs.
+    Upload is implemented as a plain div + JS AJAX (FormData) instead. %>
 <% attachments = HrzcmCiAttachment.for_ci(ci.id) %>
 
 <div style="padding-top:4px">
@@ -32,12 +38,15 @@
   <% if can_edit %>
     <div class="box" style="padding:8px;max-width:420px">
       <strong style="font-size:12px"><%= l('hrz_cmdb.documents.add_file', default: 'Dodaj plik:') %></strong>
-      <%= form_tag cmdb_ci_attachments_path(ci_id: ci.id), multipart: true, style: 'margin-top:4px' do %>
-        <p style="margin:4px 0"><input type="file" name="file" style="width:100%;font-size:12px"></p>
-        <p style="margin:4px 0"><input type="text" name="description" maxlength="512"
+      <div class="hrzcm-attachment-upload" data-upload-url="<%= cmdb_ci_attachments_path(ci_id: ci.id) %>" style="margin-top:4px">
+        <p style="margin:4px 0"><input type="file" name="file" class="hrzcm-attachment-file" style="width:100%;font-size:12px"></p>
+        <p style="margin:4px 0"><input type="text" name="description" maxlength="512" class="hrzcm-attachment-description"
            placeholder="<%= l('hrz_cmdb.documents.description_placeholder', default: 'Krótki opis...') %>" style="width:100%;font-size:12px"></p>
-        <p style="margin:4px 0"><%= submit_tag l('hrz_cmdb.buttons.add', default: 'Dodaj'), class: 'button button-positive' %></p>
-      <% end %>
+        <p style="margin:4px 0">
+          <input type="button" value="<%= l('hrz_cmdb.buttons.add', default: 'Dodaj') %>"
+                 class="button button-positive hrzcm-attachment-submit">
+        </p>
+      </div>
     </div>
   <% end %>
 </div>
